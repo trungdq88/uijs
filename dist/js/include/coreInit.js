@@ -1,3 +1,13 @@
+// Source: src/uijs/app/conf/conf.js
+/**
+ * Created by TrungDQ3 on 6/9/14.
+ */
+
+var APP_WIDTH = 1000;
+var APP_HEIGHT = 400;
+var FRAME_GAP = 10;
+
+// Source: src/uijs/core/init.js
 /**
  * Created by TrungDQ3 on 6/9/14.
  */
@@ -21,3 +31,12 @@ var initUIJS = function() {
 document.addEventListener('DOMContentLoaded', function(){
   initUIJS();
 });
+
+// Source: src/uijs/app/main.js
+/**
+ * Created by TrungDQ3 on 6/9/14.
+ */
+
+var main = function() {
+
+};

@@ -3,4 +3,4 @@
  */
 
 var $backendService = new BackendService();
-var $frameLoader = new FrameManager();
+var $frameManager = new FrameManager();

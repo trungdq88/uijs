@@ -1,0 +1,7 @@
+{
+  "js": [
+    "FrameEnums.js",
+    "FrameManager.js",
+    "BackendService.js"
+  ]
+}
