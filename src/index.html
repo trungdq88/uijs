@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title></title>
+    <!-- LIBS -->
+    <script src="uijs/core/libs/base.js"></script>
+
+    <!-- COMPONENTS -->
+    <script src="uijs/core/components/ui-control/BaseView.js"></script>
+    <script src="uijs/core/components/ui-frame/Frame.js"></script>
+
+    <!-- MODULES -->
+    <script src="uijs/app/modules/frameloader/FrameEnums.js"></script>
+    <script src="uijs/app/modules/frameloader/FrameManager.js"></script>
+    <script src="uijs/app/modules/frameloader/BackendService.js"></script>
+
+    <!-- CORE INIT -->
+    <script src="uijs/app/conf/conf.js"></script>
+    <script src="uijs/core/init.js"></script>
+    <script src="uijs/app/main.js"></script>
+
+    <!-- MODULES INIT -->
+    <script src="uijs/app/modules/frameloader/init.js"></script>
+
+</head>
+<script>
+    document.open();
+    document.write('<body onLoad="initUIJS()" style="position: absolute;width: 1280px;height: 720px;top: 0;left: 0; padding: 0; margin: 0"></body>');
+    document.close();
+</script>
+</html>
