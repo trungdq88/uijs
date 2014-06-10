@@ -1,0 +1,8 @@
+{
+  "js": [
+    "ImageView.js"
+  ],
+  "soy": [
+    "image_view.soy"
+  ]
+}

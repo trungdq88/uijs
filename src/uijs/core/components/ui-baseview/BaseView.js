@@ -9,14 +9,20 @@
 var BaseView = Base.extend({
   id: null,
   node: null,
-  childViews: [],
+  childViews: {},
   constructor: function (id) {
     this.id = id || '';
     // Add event listener
   },
-  setNode: function (node) {
-    this.node = node;
-    this.node.style.position = 'absolute';
+  setNode: function (html) {
+    var dummyEl = document.createElement('div');
+    dummyEl.innerHTML = html;
+    if (dummyEl.childNodes.length > 1) {
+      console.log('Cannot set node: the template contains multiple root node');
+    } else {
+      this.node = dummyEl.childNodes[0];
+      this.node.style.position = 'absolute';
+    }
   },
   setPosition: function (left, top, width, height) {
     this.node.style.left = left + 'px';

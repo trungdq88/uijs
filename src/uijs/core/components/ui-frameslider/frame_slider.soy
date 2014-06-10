@@ -1,0 +1,15 @@
+{namespace templates.frameslider}
+/**
+ * @param id
+ * @param images
+ */
+{template .slider}
+<div id="{$id}">
+    {foreach $image in $images}
+        {call templates.imageview.image data="all"}
+              {param id: $image.id /}
+              {param imageSource: $image.imageSource /}
+        {/call}
+    {/foreach}
+</div>
+{/template}

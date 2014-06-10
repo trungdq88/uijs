@@ -1,343 +1,46 @@
-// Source: dist/js/include/libs.js
-// Source: src/uijs/core/libs/base.js
-/*
- Base.js, version 1.1a
- Copyright 2006-2010, Dean Edwards
- License: http://www.opensource.org/licenses/mit-license.php
- */
+// Source: dist/js/include/templates.js
+// This file was automatically generated from frame.soy.
+// Please don't edit this file by hand.
 
-var Base = function() {
-    // dummy
+if (typeof templates == 'undefined') { var templates = {}; }
+if (typeof templates.frame == 'undefined') { templates.frame = {}; }
+
+
+templates.frame.frame = function(opt_data, opt_ignored) {
+  return '<div id="' + soy.$$escapeHtml(opt_data.id) + '"></div>';
 };
 
-Base.extend = function(_instance, _static) { // subclass
-    var extend = Base.prototype.extend;
+;
+// This file was automatically generated from frame_slider.soy.
+// Please don't edit this file by hand.
 
-    // build the prototype
-    Base._prototyping = true;
-    var proto = new this;
-    extend.call(proto, _instance);
-    proto.base = function() {
-        // call this method from any other method to invoke that method's ancestor
-    };
-    delete Base._prototyping;
+if (typeof templates == 'undefined') { var templates = {}; }
+if (typeof templates.frameslider == 'undefined') { templates.frameslider = {}; }
 
-    // create the wrapper for the constructor function
-    //var constructor = proto.constructor.valueOf(); //-dean
-    var constructor = proto.constructor;
-    var klass = proto.constructor = function() {
-        if (!Base._prototyping) {
-            if (this._constructing || this.constructor == klass) { // instantiation
-                this._constructing = true;
-                constructor.apply(this, arguments);
-                delete this._constructing;
-            } else if (arguments[0] != null) { // casting
-                return (arguments[0].extend || extend).call(arguments[0], proto);
-            }
-        }
-    };
 
-    // build the class interface
-    klass.ancestor = this;
-    klass.extend = this.extend;
-    klass.forEach = this.forEach;
-    klass.implement = this.implement;
-    klass.prototype = proto;
-    klass.toString = this.toString;
-    klass.valueOf = function(type) {
-        //return (type == "object") ? klass : constructor; //-dean
-        return (type == "object") ? klass : constructor.valueOf();
-    };
-    extend.call(klass, _static);
-    // class initialisation
-    if (typeof klass.init == "function") klass.init();
-    return klass;
-};
-
-Base.prototype = {
-    extend: function(source, value) {
-        if (arguments.length > 1) { // extending with a name/value pair
-            var ancestor = this[source];
-            if (ancestor && (typeof value == "function") && // overriding a method?
-                // the valueOf() comparison is to avoid circular references
-                (!ancestor.valueOf || ancestor.valueOf() != value.valueOf()) &&
-                /\bbase\b/.test(value)) {
-                // get the underlying method
-                var method = value.valueOf();
-                // override
-                value = function() {
-                    var previous = this.base || Base.prototype.base;
-                    this.base = ancestor;
-                    var returnValue = method.apply(this, arguments);
-                    this.base = previous;
-                    return returnValue;
-                };
-                // point to the underlying method
-                value.valueOf = function(type) {
-                    return (type == "object") ? value : method;
-                };
-                value.toString = Base.toString;
-            }
-            this[source] = value;
-        } else if (source) { // extending with an object literal
-            var extend = Base.prototype.extend;
-            // if this object has a customised extend method then use it
-            if (!Base._prototyping && typeof this != "function") {
-                extend = this.extend || extend;
-            }
-            var proto = {toSource: null};
-            // do the "toString" and other methods manually
-            var hidden = ["constructor", "toString", "valueOf"];
-            // if we are prototyping then include the constructor
-            var i = Base._prototyping ? 0 : 1;
-            while (key = hidden[i++]) {
-                if (source[key] != proto[key]) {
-                    extend.call(this, key, source[key]);
-
-                }
-            }
-            // copy each of the source object's properties to this object
-            for (var key in source) {
-                if (!proto[key]) extend.call(this, key, source[key]);
-            }
-        }
-        return this;
-    }
-};
-
-// initialise
-Base = Base.extend({
-    constructor: function() {
-        this.extend(arguments[0]);
-    }
-}, {
-    ancestor: Object,
-    version: "1.1",
-
-    forEach: function(object, block, context) {
-        for (var key in object) {
-            if (this.prototype[key] === undefined) {
-                block.call(context, object[key], key, object);
-            }
-        }
-    },
-
-    implement: function() {
-        for (var i = 0; i < arguments.length; i++) {
-            if (typeof arguments[i] == "function") {
-                // if it's a function, call it
-                arguments[i](this.prototype);
-            } else {
-                // add the interface using the extend method
-                this.prototype.extend(arguments[i]);
-            }
-        }
-        return this;
-    },
-
-    toString: function() {
-        return String(this.valueOf());
-    }
-});
-
-// Source: src/uijs/core/libs/dollar.js
-/**
- * Dollar - javascript utils just like jQuery
- * https://github.com/trungdq88/dollar
- * How to use: just like when you use jQuery, ex: $('.item').hide();
- * Available functions:
- * on, off, fadeIn, hide, show, addClass, removeClass, each, trigger,
- * find, parent, css, attr, html, text, hasClass
- */
-
-(function(root, undefined) {
-
-/* dollar main */
-
-// Base function.
-var dollar = function (s) {
-
-  var dollarWrapper = function ($) {
-    var _each = function(obj, handler) {
-      var result;
-      if (obj.constructor.name == 'NodeList') {
-        for (var i = 0; i < obj.length; i++) {
-          result = handler(obj[i], i);
-          if (result !== undefined) {
-            return result;
-          }
-        }
-      } else {
-        result = handler(obj);
-      }
-      return result || obj;
-    };
-
-    // PROCEDURE METHODS (return nothing)
-    $.on = function (eventName, eventHandler) {
-      return _each(this, function(el) {
-        el.addEventListener(eventName, eventHandler);
-      });
-    };
-    $.off = function(eventName, eventHandler) {
-      return _each(this, function(el) {
-        el.removeEventListener(eventName, eventHandler);
-      });
-    };
-    $.fadeIn = function (duration) {
-      if (!duration) {
-        duration = 400;
-      }
-      return _each(this, function(el) {
-        el.style.opacity = 0;
-        var last = +new Date();
-        var tick = function () {
-          el.style.opacity = +el.style.opacity + (new Date() - last) / duration;
-          last = +new Date();
-
-          if (+el.style.opacity < 1) {
-            if (root.requestAnimationFrame) {
-              root.requestAnimationFrame(tick);
-            } else {
-              setTimeout(tick, 16);
-            }
-          }
-        };
-
-        tick();
-      });
-    };
-    $.hide = function () {
-      return _each(this, function(el) {
-        el.style.display = 'none';
-      });
-    };
-    $.show = function () {
-      return _each(this, function(el) {
-        el.style.display = '';
-      });
-    };
-    $.addClass = function(className) {
-      return _each(this, function(el) {
-        if (el.classList) {
-          el.classList.add(className);
-        }
-        else {
-          el.className += ' ' + className;
-        }
-      });
-    };
-    $.removeClass = function(className) {
-      return _each(this, function(el) {
-        if (el.classList) {
-          el.classList.remove(className);
-        } else {
-          el.className = el.className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
-        }
-      });
-    };
-    $.each = function(callback) {
-      Array.prototype.forEach.call(this, function(element, index){
-        callback(index, element);
-      });
-    };
-    $.trigger = function(eventName, data) {
-      return _each(this, function(el) {
-        var event;
-        if (data) {
-          if (root.CustomEvent) {
-            event = new root.CustomEvent(eventName, {detail: data});
-          } else {
-            event = root.document.createEvent('CustomEvent');
-            event.initCustomEvent(eventName, true, true, data);
-          }
-
-          el.dispatchEvent(event);
-        } else {
-          event = root.document.createEvent('HTMLEvents');
-          event.initEvent(eventName, true, false);
-          el.dispatchEvent(event);
-        }
-      });
-    };
-
-    // FUNCTION METHODS (return thing)
-    $.find = function(selector) {
-      return dollarWrapper(this.querySelectorAll(selector));
-    };
-    $.parent = function() {
-      return _each(this, function(el) {
-        return el.parentNode;
-      });
-    };
-    $.css = function(ruleName) {
-      return _each(this, function(el) {
-        return root.getComputedStyle(el)[ruleName];
-      });
-    };
-    $.attr = function(attrName) {
-      return _each(this, function(el) {
-        return el.getAttribute(attrName);
-      });
-    };
-    $.html = function(value) {
-      return _each(this, function(el) {
-        if (value) {
-          el.innerHTML = value;
-        } else {
-          return el.innerHTML;
-        }
-      });
-    };
-    $.text = function(value) {
-      return _each(this, function(el) {
-        if (value) {
-          el.textContent = value;
-        } else {
-          return el.textContent;
-        }
-      });
-    };
-    $.hasClass = function(className) {
-      return _each(this, function(el) {
-        if (el.classList) {
-          return el.classList.contains(className);
-        } else {
-          return new RegExp('(^| )' + className + '( |$)', 'gi').test(el.className);
-        }
-      });
-    };
-    return $;
-  };
-
-  if (s) {
-    if (typeof s == 'function') {
-      root.document.addEventListener('DOMContentLoaded', s);
-    } else if (typeof s == 'object') {
-      return dollarWrapper(s);
-    } else {
-      var result = root.document.querySelectorAll(s);
-      return dollarWrapper(result);
-    }
+templates.frameslider.slider = function(opt_data, opt_ignored) {
+  var output = '<div id="' + soy.$$escapeHtml(opt_data.id) + '">';
+  var imageList11 = opt_data.images;
+  var imageListLen11 = imageList11.length;
+  for (var imageIndex11 = 0; imageIndex11 < imageListLen11; imageIndex11++) {
+    var imageData11 = imageList11[imageIndex11];
+    output += templates.imageview.image(soy.$$augmentMap(opt_data, {id: imageData11.id, imageSource: imageData11.imageSource}));
   }
+  output += '</div>';
+  return output;
 };
 
-dollar.ajax = function () {
+;
+// This file was automatically generated from image_view.soy.
+// Please don't edit this file by hand.
 
+if (typeof templates == 'undefined') { var templates = {}; }
+if (typeof templates.imageview == 'undefined') { templates.imageview = {}; }
+
+
+templates.imageview.image = function(opt_data, opt_ignored) {
+  return '<img id="' + soy.$$escapeHtml(opt_data.id) + '" src="' + soy.$$escapeHtml(opt_data.imageSource) + '"/>';
 };
-
-// Version.
-dollar.VERSION = '0.0.0';
-
-
-// Export to the root, which is probably `window`.
-root.dollar = dollar;
-if (!root.$) {
-  root.$ = dollar;
-}
-
-
-}(this));
 
 
 // Source: dist/js/include/components.js
@@ -353,14 +56,20 @@ if (!root.$) {
 var BaseView = Base.extend({
   id: null,
   node: null,
-  childViews: [],
+  childViews: {},
   constructor: function (id) {
     this.id = id || '';
     // Add event listener
   },
-  setNode: function (node) {
-    this.node = node;
-    this.node.style.position = 'absolute';
+  setNode: function (html) {
+    var dummyEl = document.createElement('div');
+    dummyEl.innerHTML = html;
+    if (dummyEl.childNodes.length > 1) {
+      console.log('Cannot set node: the template contains multiple root node');
+    } else {
+      this.node = dummyEl.childNodes[0];
+      this.node.style.position = 'absolute';
+    }
   },
   setPosition: function (left, top, width, height) {
     this.node.style.left = left + 'px';
@@ -387,10 +96,40 @@ var BaseView = Base.extend({
  */
 var Frame = BaseView.extend({
   constructor: function (id) {
-    this.base(id);
-    this.node = document.createElement('div');
-    this.node.id = 'Frame_' + this.id;
-    this.node.style.position = 'absolute';
+    this.base('Frame_' + id);
+    this.childViews = {};
+    this.setNode(templates.frame.frame(this));
+  }
+});
+
+// Source: src/uijs/core/components/ui-frameslider/FrameSlider.js
+/**
+ * Created by TrungDQ3 on 6/10/14.
+ */
+
+var FrameSlider = BaseView.extend({
+  images: [],
+  constructor: function(id, images) {
+    this.base('FrameSlider_' + id);
+    this.images = images;
+    this.setNode(templates.frameslider.slider(this));
+  }
+});
+
+// Source: src/uijs/core/components/ui-imageview/ImageView.js
+/**
+ * Created by TrungDQ3 on 6/10/14.
+ */
+
+var ImageView = BaseView.extend({
+  imageSource: '',
+  constructor: function (id, src) {
+    this.base('ImageView_' + id);
+    if (src) this.imageSource = src;
+    this.setNode(templates.imageview.image(this));
+  },
+  setImageSource: function(src) {
+    this.imageSource = src;
   }
 });
 
@@ -462,6 +201,13 @@ var FrameManager = Base.extend({
 
   getFramePosition: function (layout, index) {
     switch (layout) {
+       case $frameEnum.layout.vp1:
+         return {
+                left: FRAME_GAP,
+                top: FRAME_GAP + index * ((APP_HEIGHT - FRAME_GAP * 3)),
+                width: APP_WIDTH - FRAME_GAP*2,
+                height: (APP_HEIGHT - FRAME_GAP * 2)
+         };
       case $frameEnum.layout.vp2:
         return {
           left: FRAME_GAP,
@@ -469,6 +215,59 @@ var FrameManager = Base.extend({
           width: APP_WIDTH - FRAME_GAP * 2,
           height: (APP_HEIGHT - FRAME_GAP * 3) / 2
         };
+      case $frameEnum.layout.vp3:
+        return {
+              left: FRAME_GAP,
+              top: FRAME_GAP + index * ((APP_HEIGHT - FRAME_GAP * 3) / 3 + FRAME_GAP/2),
+              width: APP_WIDTH - FRAME_GAP * 2,
+              height: (APP_HEIGHT - FRAME_GAP * 3 - FRAME_GAP) / 3
+        };
+      case $frameEnum.layout.hp1:
+        return {
+              left: FRAME_GAP,
+              top: FRAME_GAP + index * ((APP_HEIGHT - FRAME_GAP * 3)),
+              width: APP_WIDTH - FRAME_GAP*2,
+              height: (APP_HEIGHT - FRAME_GAP * 2)
+        };
+      case $frameEnum.layout.hp2:
+        return {
+              left: FRAME_GAP + index * (APP_WIDTH - FRAME_GAP) / 2 ,
+              top: FRAME_GAP,
+              width: APP_WIDTH / 2 - FRAME_GAP * 1.5,
+              height: (APP_HEIGHT - FRAME_GAP * 2)
+        };
+      case $frameEnum.layout.hp3:
+        if(index == 1 || index == 2){
+            return {
+                left: (APP_WIDTH + FRAME_GAP) / 2,
+                top: FRAME_GAP + (index - 1)* ((APP_HEIGHT - FRAME_GAP * 3) / 2 + FRAME_GAP),
+                width: APP_WIDTH / 2 - FRAME_GAP * 1.5,
+                height: (APP_HEIGHT - FRAME_GAP * 3) / 2
+            };
+        } else {
+            return {
+                left: FRAME_GAP + index * (APP_WIDTH - FRAME_GAP) / 2 ,
+                top: FRAME_GAP,
+                width: APP_WIDTH / 2 - FRAME_GAP * 1.5,
+                height: (APP_HEIGHT - FRAME_GAP * 2)
+            };
+        }
+      case $frameEnum.layout.hp4:
+        if(index == 0 || index == 1){
+            return {
+                left: FRAME_GAP,
+                top: FRAME_GAP + index * (APP_HEIGHT / 2 - FRAME_GAP / 2),
+                width: APP_WIDTH / 2 - FRAME_GAP * 2 + FRAME_GAP/2,
+                height:  APP_HEIGHT / 2 - FRAME_GAP * 1.5
+            };
+        } else {
+            return {
+                left: APP_WIDTH / 2 + FRAME_GAP / 2,
+                top: FRAME_GAP + (index - 2) * (APP_HEIGHT / 2 - FRAME_GAP / 2),
+                width: APP_WIDTH / 2 - FRAME_GAP * 2 + FRAME_GAP / 2,
+                height:  APP_HEIGHT / 2 - FRAME_GAP * 1.5
+            };
+        }
       default:
         return null;
     }
@@ -485,7 +284,7 @@ var BackendService = Base.extend({
   getFrameData: function () {
     return {
       templateId: 1,
-      masterLayout: 'vp2',
+      masterLayout: 'hp4',
       frames: [
         {
           frameId: 1,
@@ -530,7 +329,51 @@ var BackendService = Base.extend({
           ],
           effects: ['slideLeft', 'slideRight'],
           childTemplateId: 3
-        }
+        },
+        {
+            frameId: 3,
+            items: [
+                {
+                    itemId: 4,
+                    type: 'image',
+                    url: 'http://abc.com/def4.jpg'
+                },
+                {
+                    itemId: 5,
+                    type: 'image',
+                    url: 'http://abc.com/def5.jpg'
+                },
+                {
+                    itemId: 6,
+                    type: 'image',
+                    url: 'http://abc.com/def6.jpg'
+                }
+            ],
+            effects: ['slideLeft', 'slideRight'],
+            childTemplateId: 3
+        },
+        {
+            frameId: 4,
+            items: [
+                {
+                    itemId: 7,
+                    type: 'image',
+                    url: 'http://abc.com/def4.jpg'
+                },
+                {
+                    itemId: 8,
+                    type: 'image',
+                    url: 'http://abc.com/def5.jpg'
+                },
+                {
+                    itemId: 9,
+                    type: 'image',
+                    url: 'http://abc.com/def6.jpg'
+                }
+            ],
+            effects: ['slideLeft', 'slideRight'],
+            childTemplateId: 3
+       }
       ]
     }
   }

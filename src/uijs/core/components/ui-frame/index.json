@@ -1,5 +1,8 @@
 {
   "js": [
     "Frame.js"
+  ],
+  "soy": [
+    "frame.soy"
   ]
 }

@@ -3,9 +3,8 @@
  */
 var Frame = BaseView.extend({
   constructor: function (id) {
-    this.base(id);
-    this.node = document.createElement('div');
-    this.node.id = 'Frame_' + this.id;
-    this.node.style.position = 'absolute';
+    this.base('Frame_' + id);
+    this.childViews = {};
+    this.setNode(templates.frame.frame(this));
   }
 });

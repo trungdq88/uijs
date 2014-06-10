@@ -10,9 +10,11 @@ module.exports = function(grunt) {
     var coms = grunt.file.readJSON(dir + 'index.json');
     for (var i = 0; i < coms.length; i++) {
       var files = grunt.file.readJSON(dir + coms[i] + '/index.json')[type];
-      for (var j = 0; j < files.length; j++) {
-        var path = dir + coms[i] + '/' + files[j];
-        result.push(path);
+      if (files) {
+          for (var j = 0; j < files.length; j++) {
+            var path = dir + coms[i] + '/' + files[j];
+            result.push(path);
+          }
       }
     }
     return result;
@@ -41,10 +43,23 @@ module.exports = function(grunt) {
 
     clean: ["dist/"],
 
+    soycompile: {
+      templates: {
+        src: componentFiles('soy'),
+        dest: 'dist/js/include/templates.js',
+        options: {
+          jarPath: "soy-compiler"
+        }
+      }
+    },
     copy: {
       main: {
         src: 'src/index.html',
         dest: 'dist/index.html'
+      },
+      template: {
+        src: '<%= soycompile.templates.dest %>',
+        dest: 'src/uijs/_debug/templates.js'
       }
     },
     concat: {
@@ -59,7 +74,8 @@ module.exports = function(grunt) {
         src: [
           // Libraries
           'src/uijs/core/libs/base.js',
-          'src/uijs/core/libs/dollar.js'
+          'src/uijs/core/libs/dollar.js',
+          'src/uijs/core/libs/soyutils.js'
         ],
         dest: 'dist/js/include/libs.js',
         nonull: true
@@ -90,7 +106,8 @@ module.exports = function(grunt) {
       },
       app: {
         src: [
-          '<%= concat.libraries.dest %>',
+          '<%= soycompile.templates.dest %>',
+          /** '<%= concat.libraries.dest %>', **/
           '<%= concat.components.dest %>',
           '<%= concat.modules.dest %>',
           '<%= concat.coreInit.dest %>',
@@ -98,6 +115,13 @@ module.exports = function(grunt) {
         ],
         dest: 'dist/js/app-precompiled.js',
         nonull: true
+      }
+    },
+    uglify: {
+      libraries: {
+        files: {
+          'dist/js/libs.js': ['<%= concat.libraries.dest %>']
+        }
       }
     },
     'closure-compiler': {
@@ -135,9 +159,20 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-soy-compile');
   grunt.loadNpmTasks('grunt-closure-compiler');
 
   grunt.registerTask('test', ['jshint']);
-  grunt.registerTask('default', ['clean', 'copy', 'concat', 'jshint', 'closure-compiler']);
+  grunt.registerTask('default',
+    [
+      'clean',
+      'soycompile',
+      'copy',
+      'concat',
+      'jshint',
+      'uglify',
+      'closure-compiler'
+    ]);
 
 };

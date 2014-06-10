@@ -1,0 +1,8 @@
+{
+  "js": [
+    "FrameSlider.js"
+  ],
+  "soy": [
+    "frame_slider.soy"
+  ]
+}

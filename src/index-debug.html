@@ -4,27 +4,35 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title></title>
-    <!--&lt;!&ndash; LIBS &ndash;&gt;-->
-    <!--<script src="uijs/core/libs/base.js"></script>-->
+    <!-- TEMPLATES -->
+    <script src="uijs/_debug/templates.js"></script>
 
-    <!--&lt;!&ndash; COMPONENTS &ndash;&gt;-->
-    <!--<script src="uijs/core/components/ui-baseview/BaseView.js"></script>-->
-    <!--<script src="uijs/core/components/ui-frame/Frame.js"></script>-->
+    <!-- LIBS -->
+    <script src="uijs/core/libs/base.js"></script>
+    <script src="uijs/core/libs/dollar.js"></script>
+    <script src="uijs/core/libs/soyutils.js"></script>
 
-    <!--&lt;!&ndash; MODULES &ndash;&gt;-->
-    <!--<script src="uijs/app/modules/frame_manager/FrameEnums.js"></script>-->
-    <!--<script src="uijs/app/modules/frame_manager/FrameManager.js"></script>-->
-    <!--<script src="uijs/app/modules/frame_manager/BackendService.js"></script>-->
+    <!-- COMPONENTS -->
+    <script src="uijs/core/components/ui-baseview/BaseView.js"></script>
+    <script src="uijs/core/components/ui-frame/Frame.js"></script>
+    <script src="uijs/core/components/ui-imageview/ImageView.js"></script>
+    <script src="uijs/core/components/ui-frameslider/FrameSlider.js"></script>
 
-    <!--&lt;!&ndash; CORE INIT &ndash;&gt;-->
-    <!--<script src="uijs/app/conf/conf.js"></script>-->
-    <!--<script src="uijs/core/init.js"></script>-->
-    <!--<script src="uijs/app/main.js"></script>-->
+    <!-- MODULES -->
+    <script src="uijs/app/modules/frame_manager/FrameEnums.js"></script>
+    <script src="uijs/app/modules/frame_manager/FrameManager.js"></script>
+    <script src="uijs/app/modules/frame_manager/BackendService.js"></script>
 
-    <!--&lt;!&ndash; MODULES INIT &ndash;&gt;-->
-    <!--<script src="uijs/app/modules/frame_manager/init.js"></script>-->
+    <!-- CORE INIT -->
+    <script src="uijs/app/conf/conf.js"></script>
+    <script src="uijs/core/init.js"></script>
+    <script src="uijs/app/main.js"></script>
+
+    <!-- MODULES INIT -->
+    <script src="uijs/app/modules/frame_manager/init.js"></script>
 
     <!-- SCRIPT LOADER FOR DEBUG -->
+    <!--
     <script src="uijs/core/libs/dollar.js"></script>
     <script src="uijs/core/libs/base.js"></script>
     <script>
@@ -34,10 +42,11 @@
             });
         })();
     </script>
+    -->
 </head>
 <script>
     document.open();
-    document.write('<body onLoad="initUIJS()"></body>');
+    document.write('<body></body>');
     document.close();
 </script>
 </html>

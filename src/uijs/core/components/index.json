@@ -1,4 +1,6 @@
 [
     "ui-baseview",
-    "ui-frame"
+    "ui-frame",
+    "ui-frameslider",
+    "ui-imageview"
 ]

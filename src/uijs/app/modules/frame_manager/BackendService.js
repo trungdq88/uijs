@@ -7,7 +7,7 @@ var BackendService = Base.extend({
   getFrameData: function () {
     return {
       templateId: 1,
-      masterLayout: 'vp2',
+      masterLayout: 'hp4',
       frames: [
         {
           frameId: 1,
@@ -52,7 +52,51 @@ var BackendService = Base.extend({
           ],
           effects: ['slideLeft', 'slideRight'],
           childTemplateId: 3
-        }
+        },
+        {
+            frameId: 3,
+            items: [
+                {
+                    itemId: 4,
+                    type: 'image',
+                    url: 'http://abc.com/def4.jpg'
+                },
+                {
+                    itemId: 5,
+                    type: 'image',
+                    url: 'http://abc.com/def5.jpg'
+                },
+                {
+                    itemId: 6,
+                    type: 'image',
+                    url: 'http://abc.com/def6.jpg'
+                }
+            ],
+            effects: ['slideLeft', 'slideRight'],
+            childTemplateId: 3
+        },
+        {
+            frameId: 4,
+            items: [
+                {
+                    itemId: 7,
+                    type: 'image',
+                    url: 'http://abc.com/def4.jpg'
+                },
+                {
+                    itemId: 8,
+                    type: 'image',
+                    url: 'http://abc.com/def5.jpg'
+                },
+                {
+                    itemId: 9,
+                    type: 'image',
+                    url: 'http://abc.com/def6.jpg'
+                }
+            ],
+            effects: ['slideLeft', 'slideRight'],
+            childTemplateId: 3
+       }
       ]
     }
   }
