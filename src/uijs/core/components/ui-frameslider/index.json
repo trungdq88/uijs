@@ -4,5 +4,8 @@
   ],
   "soy": [
     "frame_slider.soy"
+  ],
+  "css": [
+    "frame_slider.less"
   ]
 }

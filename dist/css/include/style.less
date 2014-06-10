@@ -1,0 +1,19 @@
+// Source: src/uijs/core/global/css/paths.less
+@imgPath: ''; // Will be defined during build
+
+// Source: src/uijs/core/global/css/global.less
+* {
+  -webkit-box-sizing: border-box;
+  overflow: hidden
+}
+
+html, body {
+  padding: 0;
+  margin: 0
+}
+
+// Source: dist/css/include/components.css
+// Source: src/uijs/core/components/ui-frameslider/frame_slider.less
+.frame_slider {
+  background: url('@{imgPath}loading.png') 50% 50% no-repeat;
+}

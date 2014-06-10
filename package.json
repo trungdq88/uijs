@@ -18,6 +18,7 @@
     "grunt-contrib-copy": "~0.5.0",
     "grunt-contrib-clean": "~0.5.0",
     "grunt-contrib-uglify": "~0.4.0",
-    "grunt-soy-compile": "~0.5.2"
+    "grunt-soy-compile": "~0.5.2",
+    "grunt-contrib-less": "~0.11.1"
   }
 }

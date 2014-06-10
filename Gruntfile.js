@@ -30,6 +30,16 @@ module.exports = function(grunt) {
     return result;
   }
 
+  function imageFilePaths() {
+    var result = [];
+    var coms = grunt.file.readJSON(dirs.componentsDir + 'index.json');
+    for (var i = 0; i < coms.length; i++) {
+      var path = dirs.componentsDir + coms[i] + '/img/*';
+      result.push(path);
+    }
+    return result;
+  }
+
   function componentFiles(type) {
     return loadJsonData(dirs.componentsDir, type);
   }
@@ -41,7 +51,7 @@ module.exports = function(grunt) {
 
     pkg: grunt.file.readJSON('package.json'),
 
-    clean: ["dist/"],
+    clean: ["dist/", "src/uijs/_debug/"],
 
     soycompile: {
       templates: {
@@ -60,6 +70,19 @@ module.exports = function(grunt) {
       template: {
         src: '<%= soycompile.templates.dest %>',
         dest: 'src/uijs/_debug/templates.js'
+      },
+      imagesDist: {
+        expand: true,
+        flatten: true,
+        src: imageFilePaths(),
+        dest: 'dist/img/'
+      },
+
+      imagesSrc: {
+        expand: true,
+        flatten: true,
+        src: imageFilePaths(),
+        dest: 'src/uijs/_debug/img/'
       }
     },
     concat: {
@@ -70,12 +93,24 @@ module.exports = function(grunt) {
             src.replace(/(^|\n)[ \t]*('use strict'|"use strict");?\s*/g, '$1');
         }
       },
+      css: {
+        src: componentFiles('css'),
+        dest: 'dist/css/include/components.css'
+      },
+      globalandcss: {
+        src: [
+          'src/uijs/core/global/css/paths.less',
+          'src/uijs/core/global/css/global.less',
+          '<%= concat.css.dest %>'
+        ],
+        dest: 'dist/css/include/style.less'
+      },
       libraries: {
         src: [
-          // Libraries
           'src/uijs/core/libs/base.js',
           'src/uijs/core/libs/dollar.js',
-          'src/uijs/core/libs/soyutils.js'
+          'src/uijs/core/libs/soyutils.js',
+          'src/uijs/core/libs/deferred.js'
         ],
         dest: 'dist/js/include/libs.js',
         nonull: true
@@ -115,6 +150,28 @@ module.exports = function(grunt) {
         ],
         dest: 'dist/js/app-precompiled.js',
         nonull: true
+      }
+    },
+
+    less: {
+      development: {
+        options: {
+          modifyVars: {
+            imgPath: '"img/"'
+          }
+        },
+        src: '<%= concat.globalandcss.dest %>',
+        dest: 'src/uijs/_debug/style.css'
+      },
+      production: {
+        options: {
+          cleancss: true,
+          modifyVars: {
+            imgPath: '"../img/"'
+          }
+        },
+        src: '<%= concat.globalandcss.dest %>',
+        dest: 'dist/css/style.css'
       }
     },
     uglify: {
@@ -162,6 +219,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-soy-compile');
   grunt.loadNpmTasks('grunt-closure-compiler');
+  grunt.loadNpmTasks('grunt-contrib-less');
 
   grunt.registerTask('test', ['jshint']);
   grunt.registerTask('default',
@@ -170,6 +228,7 @@ module.exports = function(grunt) {
       'soycompile',
       'copy',
       'concat',
+      'less',
       'jshint',
       'uglify',
       'closure-compiler'

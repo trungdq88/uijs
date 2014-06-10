@@ -8,12 +8,10 @@ bodyFrame.setBackgroundColor('#eee');
 
 var initUIJS = function() {
   document.body.style.position = 'absolute';
-  document.body.style.width = APP_WIDTH;
-  document.body.style.height = APP_HEIGHT;
+  document.body.style.width = APP_WIDTH + 'px';
+  document.body.style.height = APP_HEIGHT + 'px';
   document.body.style.top = '0px';
   document.body.style.left = '0px';
-  document.body.style.padding = '0px';
-  document.body.style.margin = '0px';
   document.body.appendChild(bodyFrame.node);
   main();
 };

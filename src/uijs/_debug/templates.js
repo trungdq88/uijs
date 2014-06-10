@@ -18,15 +18,7 @@ if (typeof templates.frameslider == 'undefined') { templates.frameslider = {}; }
 
 
 templates.frameslider.slider = function(opt_data, opt_ignored) {
-  var output = '<div id="' + soy.$$escapeHtml(opt_data.id) + '">';
-  var imageList11 = opt_data.images;
-  var imageListLen11 = imageList11.length;
-  for (var imageIndex11 = 0; imageIndex11 < imageListLen11; imageIndex11++) {
-    var imageData11 = imageList11[imageIndex11];
-    output += templates.imageview.image(soy.$$augmentMap(opt_data, {id: imageData11.id, imageSource: imageData11.imageSource}));
-  }
-  output += '</div>';
-  return output;
+  return '<div id="' + soy.$$escapeHtml(opt_data.id) + '"></div>';
 };
 
 ;

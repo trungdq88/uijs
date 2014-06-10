@@ -3,5 +3,5 @@
  */
 
 var APP_WIDTH = 1000;
-var APP_HEIGHT = 400;
+var APP_HEIGHT = 800;
 var FRAME_GAP = 10;
