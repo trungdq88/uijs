@@ -47,6 +47,12 @@ module.exports = function(grunt) {
     return loadJsonData(dirs.moduleDir, type);
   }
 
+  function lintFiles() {
+    var r1 = componentFiles('js');
+    var r2 = moduleFiles('js');
+    var r3 = loadModulesInit();
+    return r1.concat(r2).concat(r3);
+  }
   grunt.initConfig({
 
     pkg: grunt.file.readJSON('package.json'),
@@ -85,6 +91,12 @@ module.exports = function(grunt) {
         dest: 'src/uijs/_debug/img/'
       }
     },
+    jshint: {
+      files: lintFiles('js'),
+      options: {
+        jshintrc: '.jshintrc'
+      }
+    },
     concat: {
       options: {
         separator: "\n\n",
@@ -95,7 +107,8 @@ module.exports = function(grunt) {
       },
       css: {
         src: componentFiles('css'),
-        dest: 'dist/css/include/components.css'
+        dest: 'dist/css/include/components.css',
+        nonull: true
       },
       globalandcss: {
         src: [
@@ -103,7 +116,8 @@ module.exports = function(grunt) {
           'src/uijs/core/global/css/global.less',
           '<%= concat.css.dest %>'
         ],
-        dest: 'dist/css/include/style.less'
+        dest: 'dist/css/include/style.less',
+        nonull: true
       },
       libraries: {
         src: [
@@ -113,6 +127,13 @@ module.exports = function(grunt) {
           'src/uijs/core/libs/deferred.js'
         ],
         dest: 'dist/js/include/libs.js',
+        nonull: true
+      },
+      utils: {
+        src: [
+          'src/uijs/core/utils/Topic.js'
+        ],
+        dest: 'dist/js/include/utils.js',
         nonull: true
       },
       components: {
@@ -143,6 +164,7 @@ module.exports = function(grunt) {
         src: [
           '<%= soycompile.templates.dest %>',
           /** '<%= concat.libraries.dest %>', **/
+          '<%= concat.utils.dest %>',
           '<%= concat.components.dest %>',
           '<%= concat.modules.dest %>',
           '<%= concat.coreInit.dest %>',
@@ -191,17 +213,6 @@ module.exports = function(grunt) {
           compilation_level: 'SIMPLE_OPTIMIZATIONS',
           language_in: 'ECMASCRIPT5_STRICT'
         }
-      }
-    },
-    jshint: {
-      files: [],
-      options: {
-        globals: {
-          console: true,
-          module: true,
-          document: true
-        },
-        jshintrc: '.jshintrc'
       }
     },
     watch: {

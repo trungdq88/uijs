@@ -1,3 +1,4 @@
 [
-  "frame_manager"
+  "frame_manager",
+  "socket_client"
 ]

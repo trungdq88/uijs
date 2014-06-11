@@ -7,8 +7,17 @@
     "newcap": true,
     "noarg": true,
     "undef": true,
-    "unused": true,
-    "strict": true,
     "trailing": true,
-    "smarttabs": true
+    "smarttabs": true,
+    "globals": {
+      "console": true,
+      "document": true,
+      "$": true,
+      "Base": true,
+      "Deferred" : true,
+      "soy": true
+    },
+    "-W003": true,
+    "-W106": true,
+    "-W117": true
 }

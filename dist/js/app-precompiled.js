@@ -35,6 +35,34 @@ templates.imageview.image = function(opt_data, opt_ignored) {
 };
 
 
+// Source: dist/js/include/utils.js
+// Source: src/uijs/core/utils/Topic.js
+var Topic = Base.extend({
+
+  _subscribers: null,
+
+  constructor: function() {
+    this._subscribers = [];
+  },
+
+  subscribe: function() {
+    var d = new Deferred();
+    this._subscribers.push(d);
+    return d;
+  },
+
+  publish: function(data) {
+    var subs = this._subscribers;
+    this.clear();
+    for (var i = 0; i < subs.length; i++)
+      subs[i].resolve(data);
+  },
+
+  clear: function(){
+    this._subscribers = [];
+  }
+});
+
 // Source: dist/js/include/components.js
 // Source: src/uijs/core/components/ui-baseview/BaseView.js
 /**
@@ -82,7 +110,7 @@ var BaseView = Base.extend({
       this.childViews[view.id] = view;
       this.node.appendChild(view.node);
     } else {
-      console.log('View ID (' + view.id + ') is not defined or already exist in parent View')
+      console.log('View ID (' + view.id + ') is not defined or already exist in parent View (' + this.id + ')');
     }
   },
   getParentView: function () {
@@ -102,6 +130,77 @@ var Frame = BaseView.extend({
   }
 });
 
+// Source: src/uijs/core/components/ui-frameslider/FrameAnimation.js
+/**
+ * Created by TrungDQ3 on 6/11/14.
+ */
+
+var $frameAnimation = {
+  swipeLeft: function (node, revert) {
+    if (!revert) {
+      node.style.webkitTransform = 'translate3d(-100%, 0, 0)';
+    } else {
+      node.style.webkitTransform = 'translate3d(0, 0, 0)';
+    }
+  },
+  swipeRight: function (node, revert) {
+    if (!revert) {
+      node.style.webkitTransform = 'translate3d(100%, 0, 0)';
+    } else {
+      node.style.webkitTransform = 'translate3d(0, 0, 0)';
+    }
+  },
+  swipeUp: function (node, revert) {
+    if (!revert) {
+      node.style.webkitTransform = 'translate3d(0, -100%, 0)';
+    } else {
+      node.style.webkitTransform = 'translate3d(0, 0, 0)';
+    }
+  },
+  swipeDown: function (node, revert) {
+    if (!revert) {
+      node.style.webkitTransform = 'translate3d(0, 100%, 0)';
+    } else {
+      node.style.webkitTransform = 'translate3d(0, 0, 0)';
+    }
+  },
+  zoomUpDown: function (node, revert) {
+    if (!revert) {
+      node.style.webkitTransform = 'scale(0)';
+    } else {
+      node.style.webkitTransform = 'scale(1)';
+    }
+  },
+  flipRight: function (node, revert) {
+    if (!revert) {
+      node.style.webkitTransform = 'perspective(700px) rotateY(90deg)';
+    } else {
+      node.style.webkitTransform = 'perspective(700px) rotateY(0deg)';
+    }
+  },
+  flipLeft: function (node, revert) {
+    if (!revert) {
+      node.style.webkitTransform = 'perspective(700px) rotateY(-90deg)';
+    } else {
+      node.style.webkitTransform = 'perspective(700px) rotateY(0deg)';
+    }
+  },
+  flipUp: function (node, revert) {
+    if (!revert) {
+      node.style.webkitTransform = 'perspective(700px) rotateX(90deg)';
+    } else {
+      node.style.webkitTransform = 'perspective(700px) rotateX(0deg)';
+    }
+  },
+  flipDown: function (node, revert) {
+    if (!revert) {
+      node.style.webkitTransform = 'perspective(700px) rotateX(-90deg)';
+    } else {
+      node.style.webkitTransform = 'perspective(700px) rotateX(0deg)';
+    }
+  }
+};
+
 // Source: src/uijs/core/components/ui-frameslider/FrameSlider.js
 /**
  * Created by TrungDQ3 on 6/10/14.
@@ -112,15 +211,22 @@ var FrameSlider = BaseView.extend({
   timeOut: 3,
   duration: 1,
   images: [],
-  constructor: function (id, images) {
+  effects: [],
+  constructor: function (id, images, effects) {
     this.base('FrameSlider_' + id);
+    this.childViews = {};
     this.setNode(templates.frameslider.slider(this));
-    if (images) this.setImages(images);
+    if (images) {
+      this.setImages(images);
+    }
+    if (effects) {
+      this.setEffects(effects);
+    }
   },
-  setImages: function(images) {
-    var self = this;
+  setImages: function (images) {
+    var self = this,
+      defs = [];
     this.images = images;
-    var defs = [];
     this.hide();
     for (var i = 0; i < images.length; i++) {
       var image = images[i];
@@ -137,6 +243,9 @@ var FrameSlider = BaseView.extend({
       self.startSlideShow();
     });
   },
+  setEffects: function (effects) {
+    this.effects = effects;
+  },
   hide: function () {
     this.node.style.webkitTransition = 'opacity 0.5s';
     this.node.style.opacity = 0;
@@ -150,26 +259,33 @@ var FrameSlider = BaseView.extend({
     for (var i = 0; i < this.images.length; i++) {
       this.images[i].node.style.zIndex = i + 1;
     }
+    var moveLayers = function(index) {
+      self.images[index].node.style.zIndex = 1;
+      for (var i = 0; i < self.images.length; i++) {
+        if (i != index) {
+          self.images[i].node.style.zIndex = +self.images[i].node.style.zIndex + 1;
+        }
+      }
+    };
     var doTransition = function() {
       if (self.currentIndex < 0) {
         self.currentIndex = self.images.length - 1;
       }
-      self.images[self.currentIndex].node.style.webkitTransform =
-        'translate3d(' + (-self.width) + 'px, 0px, 0px)';
+      var anim = $frameAnimation[self.getRandomEffect()];
 
-      self.currentIndex--;
+      if (anim) {
+        anim(self.images[self.currentIndex].node);
 
-      setTimeout(function() {
-        var targetIndex = self.currentIndex + 1;
-        self.images[targetIndex].node.style.zIndex = 1;
-        self.images[targetIndex].node.style.webkitTransform =
-          'translate3d(0px, 0px, 0px)';
-        for (var i = 0; i < self.images.length; i++) {
-          if (i != targetIndex) {
-            self.images[i].node.style.zIndex = +self.images[i].node.style.zIndex + 1;
-          }
-        }
-      }, self.duration * 1000);
+        self.currentIndex--;
+
+        setTimeout(function() {
+          var targetIndex = self.currentIndex + 1;
+          anim(self.images[targetIndex].node, true);
+          moveLayers(targetIndex);
+        }, self.duration * 1000);
+      } else {
+        moveLayers(self.currentIndex--);
+      }
       setTimeout(doTransition, self.timeOut * 1000);
     };
     setTimeout(doTransition, this.timeOut * 1000);
@@ -187,6 +303,9 @@ var FrameSlider = BaseView.extend({
       var image = this.images[i];
       image.node.style.webkitTransition = '-webkit-transform ' + this.duration + 's';
     }
+  },
+  getRandomEffect: function () {
+    return this.effects[Math.floor(Math.random()*this.effects.length)] || '';
   }
 });
 
@@ -202,7 +321,9 @@ var ImageView = BaseView.extend({
     var self = this;
     this.base('ImageView_' + id);
 
-    if (src) this.imageSource = src;
+    if (src) {
+      this.imageSource = src;
+    }
 
     this.setNode(templates.imageview.image(this));
 
@@ -242,6 +363,157 @@ var $frameEnum = {
   }
 };
 
+// Source: src/uijs/app/modules/frame_manager/FrameUtils.js
+/**
+ * Created by DuyPT1 on 6/11/14.
+ */
+
+var $frameUtils = {
+  getSubFramePosition: function(layout, index, width, height){
+    switch (layout) {
+      case $frameEnum.layout.vp2:
+        return {
+          left: 0,
+          top: (FRAME_GAP + height) * index / 2,
+          width: width,
+          height: height/2 - FRAME_GAP/2
+        };
+      case $frameEnum.layout.vp3:
+        return {
+          left: 0,
+          top: (height / 3 + FRAME_GAP / 3) * index ,
+          width: width,
+          height: (height - FRAME_GAP * 3 - FRAME_GAP) / 3 + FRAME_GAP/1.5
+        };
+      case $frameEnum.layout.hp1:
+        return {
+          left: FRAME_GAP,
+          top: FRAME_GAP + index * ((height - FRAME_GAP * 3)),
+          width: width - FRAME_GAP * 2,
+          height: (height - FRAME_GAP * 2)
+        };
+      case $frameEnum.layout.hp2:
+        return {
+          left:  (FRAME_GAP + width) * index / 2,
+          top: 0,
+          width: (width - FRAME_GAP) / 2 ,
+          height: height
+        };
+      case $frameEnum.layout.hp3:
+        if (index == 1 || index == 2) {
+          return {
+            left: (width + FRAME_GAP) / 2,
+            top: (index - 1) * ((height - FRAME_GAP * 3) / 2 + FRAME_GAP*2),
+            width: width / 2 - FRAME_GAP * 1.5 + FRAME_GAP,
+            height: (height - FRAME_GAP ) / 2
+          };
+        } else {
+          return {
+            left: 0,
+            top: 0,
+            width: width / 2 - FRAME_GAP * 1.5 + FRAME_GAP,
+            height: height
+          };
+        }
+        break;
+      case $frameEnum.layout.hp4:
+        if (index === 0 || index == 1) {
+          return {
+            left: 0,
+            top: index * (height / 2 + FRAME_GAP/2),
+            width: width / 2 - FRAME_GAP * 2 + FRAME_GAP * 1.5,
+            height: (height - FRAME_GAP) / 2
+          };
+        } else {
+          return {
+            left: width / 2 + FRAME_GAP / 2,
+            top:  (index - 2) * (height + FRAME_GAP) / 2,
+            width: width / 2 - FRAME_GAP * 2 + FRAME_GAP * 1.5,
+            height: (height - FRAME_GAP) / 2
+          };
+        }
+        break;
+      default:
+        return null;
+    }
+  },
+  getFramePosition: function (layout, index, height, width) {
+    switch (layout) {
+      case $frameEnum.layout.vp1:
+        return {
+          left: FRAME_GAP,
+          top: FRAME_GAP + index * ((height - FRAME_GAP * 3)),
+          width: width - FRAME_GAP * 2,
+          height: (height - FRAME_GAP * 2)
+        };
+      case $frameEnum.layout.vp2:
+        return {
+          left: FRAME_GAP,
+          top: FRAME_GAP + index * ((height - FRAME_GAP * 3) / 2 + FRAME_GAP),
+          width: width - FRAME_GAP * 2,
+          height: (height - FRAME_GAP * 3) / 2
+        };
+      case $frameEnum.layout.vp3:
+        return {
+          left: FRAME_GAP,
+          top: FRAME_GAP + index * ((height - FRAME_GAP * 3) / 3 + FRAME_GAP / 2),
+          width: width - FRAME_GAP * 2,
+          height: (height - FRAME_GAP * 3 - FRAME_GAP) / 3
+        };
+      case $frameEnum.layout.hp1:
+        return {
+          left: FRAME_GAP,
+          top: FRAME_GAP + index * ((height - FRAME_GAP * 3)),
+          width: width - FRAME_GAP * 2,
+          height: (height - FRAME_GAP * 2)
+        };
+      case $frameEnum.layout.hp2:
+        return {
+          left: FRAME_GAP + index * (width - FRAME_GAP) / 2,
+          top: FRAME_GAP,
+          width: width / 2 - FRAME_GAP * 1.5,
+          height: (height - FRAME_GAP * 2)
+        };
+      case $frameEnum.layout.hp3:
+        if (index == 1 || index == 2) {
+          return {
+            left: (width + FRAME_GAP) / 2,
+            top: FRAME_GAP + (index - 1) * ((height - FRAME_GAP * 3) / 2 + FRAME_GAP),
+            width: width / 2 - FRAME_GAP * 1.5,
+            height: (height - FRAME_GAP * 3) / 2
+          };
+        } else {
+          return {
+            left: FRAME_GAP + index * (width - FRAME_GAP) / 2,
+            top: FRAME_GAP,
+            width: width / 2 - FRAME_GAP * 1.5,
+            height: (height - FRAME_GAP * 2)
+          };
+        }
+        break;
+      case $frameEnum.layout.hp4:
+        if (index === 0 || index == 1) {
+          return {
+            left: FRAME_GAP,
+            top: FRAME_GAP + index * (height / 2 - FRAME_GAP / 2),
+            width: width / 2 - FRAME_GAP * 2 + FRAME_GAP / 2,
+            height: height / 2 - FRAME_GAP * 1.5
+          };
+        } else {
+          return {
+            left: width / 2 + FRAME_GAP / 2,
+            top: FRAME_GAP + (index - 2) * (height / 2 - FRAME_GAP / 2),
+            width: width / 2 - FRAME_GAP * 2 + FRAME_GAP / 2,
+            height: height / 2 - FRAME_GAP * 1.5
+          };
+        }
+        break;
+      default:
+        return null;
+    }
+  }
+};
+
 // Source: src/uijs/app/modules/frame_manager/FrameManager.js
 /**
  * Created by TrungDQ3 on 6/9/14.
@@ -256,23 +528,43 @@ var FrameManager = Base.extend({
 
     for (var i = 0; i < data.frames.length; i++) {
       var frame = new Frame(i + 1);
-      var position = this.getFramePosition(data.masterLayout, i);
+      var frameTmp = data.frames[i];
+      var position = $frameUtils.getFramePosition(data.masterLayout, i, APP_HEIGHT, APP_WIDTH);
       frame.setPosition(position.left, position.top, position.width, position.height);
-      frame.setBackgroundColor('#ccc');
-      /*
-       for (var j = 0; j < dataFrame.items.length; j++) {
-       switch (dataFrame.items[j].type) {
-       case $frameEnum.item.image:
 
-       break;
-       case $frameEnum.item.video:
-       console.log('Not implement yet');
-       break;
-       }
-       }
-       */
+      if (frameTmp.subLayout !== null) {
+        for(var j = 0; j < frameTmp.frames.length; j++){
+          var childFrameTmp = frameTmp.frames[j];
+          var subFrame = new Frame('Sub_' + (j + 1));
+          var positionOfSubFrame = $frameUtils.getSubFramePosition(frameTmp.subLayout, j, position.width, position.height);
+          subFrame.setPosition(positionOfSubFrame.left, positionOfSubFrame.top, positionOfSubFrame.width, positionOfSubFrame.height);
+          subFrame.setBackgroundColor('#ccc');
+
+          // Add slider
+
+          frame.addChildView(subFrame);
+        }
+      } else {
+        frame.setBackgroundColor('#ccc');
+
+        // Add slider
+
+      }// end if
+
+
+//      for (var j = 0; j < data.frames.items.length; j++) {
+//        switch (data.frames.items[j].type) {
+//          case $frameEnum.item.image:
+//              console.log('aaa');
+//            break;
+//          case $frameEnum.item.video:
+//            console.log('Not implement yet');
+//            break;
+//        }
+//      }
+
       this.frames.push(frame);
-    }
+    }// end for
 
     this.show();
   },
@@ -280,80 +572,6 @@ var FrameManager = Base.extend({
   show: function () {
     for (var i = 0; i < this.frames.length; i++) {
       bodyFrame.addChildView(this.frames[i]);
-    }
-  },
-
-  getFramePosition: function (layout, index) {
-    switch (layout) {
-       case $frameEnum.layout.vp1:
-         return {
-                left: FRAME_GAP,
-                top: FRAME_GAP + index * ((APP_HEIGHT - FRAME_GAP * 3)),
-                width: APP_WIDTH - FRAME_GAP*2,
-                height: (APP_HEIGHT - FRAME_GAP * 2)
-         };
-      case $frameEnum.layout.vp2:
-        return {
-          left: FRAME_GAP,
-          top: FRAME_GAP + index * ((APP_HEIGHT - FRAME_GAP * 3) / 2 + FRAME_GAP),
-          width: APP_WIDTH - FRAME_GAP * 2,
-          height: (APP_HEIGHT - FRAME_GAP * 3) / 2
-        };
-      case $frameEnum.layout.vp3:
-        return {
-              left: FRAME_GAP,
-              top: FRAME_GAP + index * ((APP_HEIGHT - FRAME_GAP * 3) / 3 + FRAME_GAP/2),
-              width: APP_WIDTH - FRAME_GAP * 2,
-              height: (APP_HEIGHT - FRAME_GAP * 3 - FRAME_GAP) / 3
-        };
-      case $frameEnum.layout.hp1:
-        return {
-              left: FRAME_GAP,
-              top: FRAME_GAP + index * ((APP_HEIGHT - FRAME_GAP * 3)),
-              width: APP_WIDTH - FRAME_GAP*2,
-              height: (APP_HEIGHT - FRAME_GAP * 2)
-        };
-      case $frameEnum.layout.hp2:
-        return {
-              left: FRAME_GAP + index * (APP_WIDTH - FRAME_GAP) / 2 ,
-              top: FRAME_GAP,
-              width: APP_WIDTH / 2 - FRAME_GAP * 1.5,
-              height: (APP_HEIGHT - FRAME_GAP * 2)
-        };
-      case $frameEnum.layout.hp3:
-        if(index == 1 || index == 2){
-            return {
-                left: (APP_WIDTH + FRAME_GAP) / 2,
-                top: FRAME_GAP + (index - 1)* ((APP_HEIGHT - FRAME_GAP * 3) / 2 + FRAME_GAP),
-                width: APP_WIDTH / 2 - FRAME_GAP * 1.5,
-                height: (APP_HEIGHT - FRAME_GAP * 3) / 2
-            };
-        } else {
-            return {
-                left: FRAME_GAP + index * (APP_WIDTH - FRAME_GAP) / 2 ,
-                top: FRAME_GAP,
-                width: APP_WIDTH / 2 - FRAME_GAP * 1.5,
-                height: (APP_HEIGHT - FRAME_GAP * 2)
-            };
-        }
-      case $frameEnum.layout.hp4:
-        if(index == 0 || index == 1){
-            return {
-                left: FRAME_GAP,
-                top: FRAME_GAP + index * (APP_HEIGHT / 2 - FRAME_GAP / 2),
-                width: APP_WIDTH / 2 - FRAME_GAP * 2 + FRAME_GAP/2,
-                height:  APP_HEIGHT / 2 - FRAME_GAP * 1.5
-            };
-        } else {
-            return {
-                left: APP_WIDTH / 2 + FRAME_GAP / 2,
-                top: FRAME_GAP + (index - 2) * (APP_HEIGHT / 2 - FRAME_GAP / 2),
-                width: APP_WIDTH / 2 - FRAME_GAP * 2 + FRAME_GAP / 2,
-                height:  APP_HEIGHT / 2 - FRAME_GAP * 1.5
-            };
-        }
-      default:
-        return null;
     }
   }
 });
@@ -364,7 +582,7 @@ var FrameManager = Base.extend({
  */
 
 var BackendService = Base.extend({
-  BACKEND_URL: '',
+  BACKEND_SOCKET_URL: '',
   getFrameData: function () {
     return {
       templateId: 1,
@@ -372,94 +590,347 @@ var BackendService = Base.extend({
       frames: [
         {
           frameId: 1,
-          items: [
+          subLayout: null,
+          frames: [
             {
-              itemId: 1,
-              type: 'image',
-              url: 'http://abc.com/def1.jpg'
+              frameId: 2,
+              items: [
+                {
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
+                },
+                {
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
+                },
+                {
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
+                }
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
             },
             {
-              itemId: 2,
-              type: 'image',
-              url: 'http://abc.com/def2.jpg'
-            },
-            {
-              itemId: 3,
-              type: 'image',
-              url: 'http://abc.com/def3.jpg'
+              frameId: 1,
+              items: [
+                {
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
+                },
+                {
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
+                },
+                {
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
+                }
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
             }
           ],
+          items: [],
           effects: ['slideLeft', 'slideRight'],
           childTemplateId: 3
         },
         {
           frameId: 2,
-          items: [
+          subLayout: 'hp3',
+          frames: [
             {
-              itemId: 4,
-              type: 'image',
-              url: 'http://abc.com/def4.jpg'
+              frameId: 1,
+              items: [
+                {
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
+                },
+                {
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
+                },
+                {
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
+                }
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
             },
             {
-              itemId: 5,
-              type: 'image',
-              url: 'http://abc.com/def5.jpg'
+              frameId: 2,
+              items: [
+                {
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
+                },
+                {
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
+                },
+                {
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
+                }
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
             },
             {
-              itemId: 6,
-              type: 'image',
-              url: 'http://abc.com/def6.jpg'
+              frameId: 3,
+              items: [
+                {
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
+                },
+                {
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
+                },
+                {
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
+                }
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
             }
           ],
+          items: [],
           effects: ['slideLeft', 'slideRight'],
           childTemplateId: 3
         },
         {
-            frameId: 3,
-            items: [
+          frameId: 3,
+          subLayout: 'hp4',
+          frames: [
+            {
+              frameId: 1,
+              items: [
                 {
-                    itemId: 4,
-                    type: 'image',
-                    url: 'http://abc.com/def4.jpg'
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
                 },
                 {
-                    itemId: 5,
-                    type: 'image',
-                    url: 'http://abc.com/def5.jpg'
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
                 },
                 {
-                    itemId: 6,
-                    type: 'image',
-                    url: 'http://abc.com/def6.jpg'
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
                 }
-            ],
-            effects: ['slideLeft', 'slideRight'],
-            childTemplateId: 3
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
+            },
+            {
+              frameId: 2,
+              items: [
+                {
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
+                },
+                {
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
+                },
+                {
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
+                }
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
+            },
+            {
+              frameId: 3,
+              items: [
+                {
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
+                },
+                {
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
+                },
+                {
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
+                }
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
+            },
+            {
+              frameId: 4,
+              items: [
+                {
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
+                },
+                {
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
+                },
+                {
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
+                }
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
+            }
+          ],
+          items: [],
+          effects: ['slideLeft', 'slideRight'],
+          childTemplateId: 3
         },
         {
-            frameId: 4,
-            items: [
+          frameId: 4,
+          subLayout: 'vp3',
+          frames: [
+            {
+              frameId: 1,
+              items: [
                 {
-                    itemId: 7,
-                    type: 'image',
-                    url: 'http://abc.com/def4.jpg'
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
                 },
                 {
-                    itemId: 8,
-                    type: 'image',
-                    url: 'http://abc.com/def5.jpg'
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
                 },
                 {
-                    itemId: 9,
-                    type: 'image',
-                    url: 'http://abc.com/def6.jpg'
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
                 }
-            ],
-            effects: ['slideLeft', 'slideRight'],
-            childTemplateId: 3
-       }
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
+            },
+            {
+              frameId: 2,
+              items: [
+                {
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
+                },
+                {
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
+                },
+                {
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
+                }
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
+            },
+            {
+              frameId: 3,
+              items: [
+                {
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
+                },
+                {
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
+                },
+                {
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
+                }
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
+            }
+          ],
+          items: [],
+          effects: ['slideLeft', 'slideRight'],
+          childTemplateId: 3
+        }
       ]
+    };
+  }
+});
+
+// Source: src/uijs/app/modules/socket_client/SocketClient.js
+/**
+ * Created by TrungDQ3 on 6/11/14.
+ */
+
+var SocketClient = Base.extend({
+  ws: null,
+  url: '',
+  defOnOpen: new Deferred(),
+  defOnMessage: new Deferred(),
+  defOnClose: new Deferred(),
+  constructor: function (url) {
+    if (url) {
+      this.connect(url);
     }
+  },
+  connect: function (url) {
+    var self = this;
+    this.url = url;
+    this.ws = new WebSocket(url);
+
+    this.ws.onopen = function() {
+      self.defOnOpen.resolve();
+    };
+    this.ws.onmessage = function (evt) {
+      self.defOnMessage.resolve(evt);
+    };
+    this.ws.onclose = function() {
+      self.defOnClose.resolve();
+    };
+    return this.defOnOpen;
+  },
+  send: function (msg) {
+    this.ws.send(msg);
+  }
+}, {
+  isSupported: function () {
+    return "WebSocket" in window;
   }
 });
 
@@ -501,17 +972,62 @@ document.addEventListener('DOMContentLoaded', function(){
  * Created by TrungDQ3 on 6/9/14.
  */
 
-var main = function() {
-  var a = new ImageView('image1', 'http://www.byui.edu/images/agriculture-life-sciences/flower.jpg');
-  var b = new ImageView('image2', 'http://4.bp.blogspot.com/_89oxiIwvtak/STczHGkOYTI/AAAAAAAAFNg/lEcEBLdlToo/s400/Tropical+Plumeria+Flower.jpg');
-  var c = new ImageView('image3', 'http://1.bp.blogspot.com/-GVDcl1JUO8I/UYdQH9LFk5I/AAAAAAAAKUA/IWJ1vDPZdto/s640/flowers333.jpg');
+var main = function () {
+  /*
+  var a = new ImageView('image1', 'http://www.byui.edu/images/agriculture-life-sciences/flower.jpg'),
+    b = new ImageView('image2', 'http://4.bp.blogspot.com/_89oxiIwvtak/STczHGkOYTI/AAAAAAAAFNg/lEcEBLdlToo/s400/' +
+      'Tropical+Plumeria+Flower.jpg'),
+    c = new ImageView('image3', 'http://1.bp.blogspot.com/-GVDcl1JUO8I/UYdQH9LFk5I/AAAAAAAAKUA/IWJ1vDPZdto/s640/' +
+      'flowers333.jpg'),
+    d = new ImageView('image4', 'http://2.bp.blogspot.com/-WuasmTMjMA4/TY0SS4TzIMI/AAAAAAAAFB4/6alyfOzWsqM/s640/' +
+      'flowers-wallpapers-love-blooms-roses-bunch-of-flowers.jpg'),
+    e = new ImageView('image5', 'http://www.boatshedmarket.com.au/image/data/flowers_img.jpg'),
+    f = new ImageView('image6', 'http://www.grandpalaceriga.com/images/catalog_full/89ac280cc25173a167f93d4f0e7c' +
+      '1e21.jpg'),
+    g = new ImageView('image7', 'http://4.bp.blogspot.com/_6D_evDvZgNA/SKpsT-ic4DI/AAAAAAAAAD8/fv4lqqI0PRY/s400/' +
+      'fragile-white-flowers.jpg'),
+    h = new ImageView('image8', 'http://www.graphix1.co.uk/wp-content/uploads/2011/08/08Flowers.jpg'),
+    i = new ImageView('image9', 'http://1.bp.blogspot.com/-WS3KVqdQn_Q/T-bU51hQJ3I/AAAAAAAAAFo/zwC4CKr7Xh0/s1600/' +
+      'the-desktop-hd-Flowers-wallpapers+(3).jpg'),
+    j = new ImageView('image10', 'http://blog.interflora.co.uk/wp-content/uploads/2012/07/Passion-Flower.jpg'),
+    k = new ImageView('image11', 'http://1.bp.blogspot.com/-JBzh6ow4OW0/UTM-iRlaiyI/AAAAAAAASec/stu52MBuWnM/s1600/' +
+      'y016-741067.jpg'),
+    l = new ImageView('image12', 'http://1.bp.blogspot.com/-DvLpL0NphyU/TpSFQ6WiUOI/AAAAAAAABbg/B-ykNMvWQvU/s1600/' +
+      'happy.jpg'),
+    slider1 = new FrameSlider('slider1'),
+    slider2 = new FrameSlider('slider2'),
+    slider3 = new FrameSlider('slider3'),
+    slider4 = new FrameSlider('slider4'),
+    target1 = bodyFrame.childViews.Frame_1,
+    target2 = bodyFrame.childViews.Frame_2,
+    target3 = bodyFrame.childViews.Frame_3,
+    target4 = bodyFrame.childViews.Frame_4;
 
-  var slider = new FrameSlider('slider');
-  var target = bodyFrame.childViews.Frame_1;
-  slider.setPosition(0,0,target.width, target.height);
-  slider.setImages([a,b,c]);
-  target.addChildView(slider);
-  $(target.node).addClass('frame_slider');
+  slider1.setPosition(0, 0, target1.width, target1.height);
+  slider1.setImages([a, b, c]);
+  slider1.setEffects(['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown']);
+  target1.addChildView(slider1);
+
+  slider2.setPosition(0, 0, target2.width, target2.height);
+  slider2.setImages([d, e, f]);
+  slider2.setEffects(['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown']);
+  target2.addChildView(slider2);
+
+  slider3.setPosition(0, 0, target3.width, target3.height);
+  slider3.setImages([g, h, i]);
+  slider3.setEffects(['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown']);
+  target3.addChildView(slider3);
+
+  slider4.setPosition(0, 0, target4.width, target4.height);
+  slider4.setImages([j, k, l]);
+  slider4.setEffects(['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown']);
+  target4.addChildView(slider4);
+
+  $(target1.node).addClass('frame_slider');
+  $(target2.node).addClass('frame_slider');
+  $(target3.node).addClass('frame_slider');
+  $(target4.node).addClass('frame_slider');
+  */
 };
 
 // Source: dist/js/include/modulesInit.js

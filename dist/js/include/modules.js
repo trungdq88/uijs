@@ -22,6 +22,157 @@ var $frameEnum = {
   }
 };
 
+// Source: src/uijs/app/modules/frame_manager/FrameUtils.js
+/**
+ * Created by DuyPT1 on 6/11/14.
+ */
+
+var $frameUtils = {
+  getSubFramePosition: function(layout, index, width, height){
+    switch (layout) {
+      case $frameEnum.layout.vp2:
+        return {
+          left: 0,
+          top: (FRAME_GAP + height) * index / 2,
+          width: width,
+          height: height/2 - FRAME_GAP/2
+        };
+      case $frameEnum.layout.vp3:
+        return {
+          left: 0,
+          top: (height / 3 + FRAME_GAP / 3) * index ,
+          width: width,
+          height: (height - FRAME_GAP * 3 - FRAME_GAP) / 3 + FRAME_GAP/1.5
+        };
+      case $frameEnum.layout.hp1:
+        return {
+          left: FRAME_GAP,
+          top: FRAME_GAP + index * ((height - FRAME_GAP * 3)),
+          width: width - FRAME_GAP * 2,
+          height: (height - FRAME_GAP * 2)
+        };
+      case $frameEnum.layout.hp2:
+        return {
+          left:  (FRAME_GAP + width) * index / 2,
+          top: 0,
+          width: (width - FRAME_GAP) / 2 ,
+          height: height
+        };
+      case $frameEnum.layout.hp3:
+        if (index == 1 || index == 2) {
+          return {
+            left: (width + FRAME_GAP) / 2,
+            top: (index - 1) * ((height - FRAME_GAP * 3) / 2 + FRAME_GAP*2),
+            width: width / 2 - FRAME_GAP * 1.5 + FRAME_GAP,
+            height: (height - FRAME_GAP ) / 2
+          };
+        } else {
+          return {
+            left: 0,
+            top: 0,
+            width: width / 2 - FRAME_GAP * 1.5 + FRAME_GAP,
+            height: height
+          };
+        }
+        break;
+      case $frameEnum.layout.hp4:
+        if (index === 0 || index == 1) {
+          return {
+            left: 0,
+            top: index * (height / 2 + FRAME_GAP/2),
+            width: width / 2 - FRAME_GAP * 2 + FRAME_GAP * 1.5,
+            height: (height - FRAME_GAP) / 2
+          };
+        } else {
+          return {
+            left: width / 2 + FRAME_GAP / 2,
+            top:  (index - 2) * (height + FRAME_GAP) / 2,
+            width: width / 2 - FRAME_GAP * 2 + FRAME_GAP * 1.5,
+            height: (height - FRAME_GAP) / 2
+          };
+        }
+        break;
+      default:
+        return null;
+    }
+  },
+  getFramePosition: function (layout, index, height, width) {
+    switch (layout) {
+      case $frameEnum.layout.vp1:
+        return {
+          left: FRAME_GAP,
+          top: FRAME_GAP + index * ((height - FRAME_GAP * 3)),
+          width: width - FRAME_GAP * 2,
+          height: (height - FRAME_GAP * 2)
+        };
+      case $frameEnum.layout.vp2:
+        return {
+          left: FRAME_GAP,
+          top: FRAME_GAP + index * ((height - FRAME_GAP * 3) / 2 + FRAME_GAP),
+          width: width - FRAME_GAP * 2,
+          height: (height - FRAME_GAP * 3) / 2
+        };
+      case $frameEnum.layout.vp3:
+        return {
+          left: FRAME_GAP,
+          top: FRAME_GAP + index * ((height - FRAME_GAP * 3) / 3 + FRAME_GAP / 2),
+          width: width - FRAME_GAP * 2,
+          height: (height - FRAME_GAP * 3 - FRAME_GAP) / 3
+        };
+      case $frameEnum.layout.hp1:
+        return {
+          left: FRAME_GAP,
+          top: FRAME_GAP + index * ((height - FRAME_GAP * 3)),
+          width: width - FRAME_GAP * 2,
+          height: (height - FRAME_GAP * 2)
+        };
+      case $frameEnum.layout.hp2:
+        return {
+          left: FRAME_GAP + index * (width - FRAME_GAP) / 2,
+          top: FRAME_GAP,
+          width: width / 2 - FRAME_GAP * 1.5,
+          height: (height - FRAME_GAP * 2)
+        };
+      case $frameEnum.layout.hp3:
+        if (index == 1 || index == 2) {
+          return {
+            left: (width + FRAME_GAP) / 2,
+            top: FRAME_GAP + (index - 1) * ((height - FRAME_GAP * 3) / 2 + FRAME_GAP),
+            width: width / 2 - FRAME_GAP * 1.5,
+            height: (height - FRAME_GAP * 3) / 2
+          };
+        } else {
+          return {
+            left: FRAME_GAP + index * (width - FRAME_GAP) / 2,
+            top: FRAME_GAP,
+            width: width / 2 - FRAME_GAP * 1.5,
+            height: (height - FRAME_GAP * 2)
+          };
+        }
+        break;
+      case $frameEnum.layout.hp4:
+        if (index === 0 || index == 1) {
+          return {
+            left: FRAME_GAP,
+            top: FRAME_GAP + index * (height / 2 - FRAME_GAP / 2),
+            width: width / 2 - FRAME_GAP * 2 + FRAME_GAP / 2,
+            height: height / 2 - FRAME_GAP * 1.5
+          };
+        } else {
+          return {
+            left: width / 2 + FRAME_GAP / 2,
+            top: FRAME_GAP + (index - 2) * (height / 2 - FRAME_GAP / 2),
+            width: width / 2 - FRAME_GAP * 2 + FRAME_GAP / 2,
+            height: height / 2 - FRAME_GAP * 1.5
+          };
+        }
+        break;
+      default:
+        return null;
+    }
+  }
+};
+
 // Source: src/uijs/app/modules/frame_manager/FrameManager.js
 /**
  * Created by TrungDQ3 on 6/9/14.
@@ -36,23 +187,43 @@ var FrameManager = Base.extend({
 
     for (var i = 0; i < data.frames.length; i++) {
       var frame = new Frame(i + 1);
-      var position = this.getFramePosition(data.masterLayout, i);
+      var frameTmp = data.frames[i];
+      var position = $frameUtils.getFramePosition(data.masterLayout, i, APP_HEIGHT, APP_WIDTH);
       frame.setPosition(position.left, position.top, position.width, position.height);
-      frame.setBackgroundColor('#ccc');
-      /*
-       for (var j = 0; j < dataFrame.items.length; j++) {
-       switch (dataFrame.items[j].type) {
-       case $frameEnum.item.image:
 
-       break;
-       case $frameEnum.item.video:
-       console.log('Not implement yet');
-       break;
-       }
-       }
-       */
+      if (frameTmp.subLayout !== null) {
+        for(var j = 0; j < frameTmp.frames.length; j++){
+          var childFrameTmp = frameTmp.frames[j];
+          var subFrame = new Frame('Sub_' + (j + 1));
+          var positionOfSubFrame = $frameUtils.getSubFramePosition(frameTmp.subLayout, j, position.width, position.height);
+          subFrame.setPosition(positionOfSubFrame.left, positionOfSubFrame.top, positionOfSubFrame.width, positionOfSubFrame.height);
+          subFrame.setBackgroundColor('#ccc');
+
+          // Add slider
+
+          frame.addChildView(subFrame);
+        }
+      } else {
+        frame.setBackgroundColor('#ccc');
+
+        // Add slider
+
+      }// end if
+
+
+//      for (var j = 0; j < data.frames.items.length; j++) {
+//        switch (data.frames.items[j].type) {
+//          case $frameEnum.item.image:
+//              console.log('aaa');
+//            break;
+//          case $frameEnum.item.video:
+//            console.log('Not implement yet');
+//            break;
+//        }
+//      }
+
       this.frames.push(frame);
-    }
+    }// end for
 
     this.show();
   },
@@ -60,80 +231,6 @@ var FrameManager = Base.extend({
   show: function () {
     for (var i = 0; i < this.frames.length; i++) {
       bodyFrame.addChildView(this.frames[i]);
-    }
-  },
-
-  getFramePosition: function (layout, index) {
-    switch (layout) {
-       case $frameEnum.layout.vp1:
-         return {
-                left: FRAME_GAP,
-                top: FRAME_GAP + index * ((APP_HEIGHT - FRAME_GAP * 3)),
-                width: APP_WIDTH - FRAME_GAP*2,
-                height: (APP_HEIGHT - FRAME_GAP * 2)
-         };
-      case $frameEnum.layout.vp2:
-        return {
-          left: FRAME_GAP,
-          top: FRAME_GAP + index * ((APP_HEIGHT - FRAME_GAP * 3) / 2 + FRAME_GAP),
-          width: APP_WIDTH - FRAME_GAP * 2,
-          height: (APP_HEIGHT - FRAME_GAP * 3) / 2
-        };
-      case $frameEnum.layout.vp3:
-        return {
-              left: FRAME_GAP,
-              top: FRAME_GAP + index * ((APP_HEIGHT - FRAME_GAP * 3) / 3 + FRAME_GAP/2),
-              width: APP_WIDTH - FRAME_GAP * 2,
-              height: (APP_HEIGHT - FRAME_GAP * 3 - FRAME_GAP) / 3
-        };
-      case $frameEnum.layout.hp1:
-        return {
-              left: FRAME_GAP,
-              top: FRAME_GAP + index * ((APP_HEIGHT - FRAME_GAP * 3)),
-              width: APP_WIDTH - FRAME_GAP*2,
-              height: (APP_HEIGHT - FRAME_GAP * 2)
-        };
-      case $frameEnum.layout.hp2:
-        return {
-              left: FRAME_GAP + index * (APP_WIDTH - FRAME_GAP) / 2 ,
-              top: FRAME_GAP,
-              width: APP_WIDTH / 2 - FRAME_GAP * 1.5,
-              height: (APP_HEIGHT - FRAME_GAP * 2)
-        };
-      case $frameEnum.layout.hp3:
-        if(index == 1 || index == 2){
-            return {
-                left: (APP_WIDTH + FRAME_GAP) / 2,
-                top: FRAME_GAP + (index - 1)* ((APP_HEIGHT - FRAME_GAP * 3) / 2 + FRAME_GAP),
-                width: APP_WIDTH / 2 - FRAME_GAP * 1.5,
-                height: (APP_HEIGHT - FRAME_GAP * 3) / 2
-            };
-        } else {
-            return {
-                left: FRAME_GAP + index * (APP_WIDTH - FRAME_GAP) / 2 ,
-                top: FRAME_GAP,
-                width: APP_WIDTH / 2 - FRAME_GAP * 1.5,
-                height: (APP_HEIGHT - FRAME_GAP * 2)
-            };
-        }
-      case $frameEnum.layout.hp4:
-        if(index == 0 || index == 1){
-            return {
-                left: FRAME_GAP,
-                top: FRAME_GAP + index * (APP_HEIGHT / 2 - FRAME_GAP / 2),
-                width: APP_WIDTH / 2 - FRAME_GAP * 2 + FRAME_GAP/2,
-                height:  APP_HEIGHT / 2 - FRAME_GAP * 1.5
-            };
-        } else {
-            return {
-                left: APP_WIDTH / 2 + FRAME_GAP / 2,
-                top: FRAME_GAP + (index - 2) * (APP_HEIGHT / 2 - FRAME_GAP / 2),
-                width: APP_WIDTH / 2 - FRAME_GAP * 2 + FRAME_GAP / 2,
-                height:  APP_HEIGHT / 2 - FRAME_GAP * 1.5
-            };
-        }
-      default:
-        return null;
     }
   }
 });
@@ -144,7 +241,7 @@ var FrameManager = Base.extend({
  */
 
 var BackendService = Base.extend({
-  BACKEND_URL: '',
+  BACKEND_SOCKET_URL: '',
   getFrameData: function () {
     return {
       templateId: 1,
@@ -152,93 +249,346 @@ var BackendService = Base.extend({
       frames: [
         {
           frameId: 1,
-          items: [
+          subLayout: null,
+          frames: [
             {
-              itemId: 1,
-              type: 'image',
-              url: 'http://abc.com/def1.jpg'
+              frameId: 2,
+              items: [
+                {
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
+                },
+                {
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
+                },
+                {
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
+                }
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
             },
             {
-              itemId: 2,
-              type: 'image',
-              url: 'http://abc.com/def2.jpg'
-            },
-            {
-              itemId: 3,
-              type: 'image',
-              url: 'http://abc.com/def3.jpg'
+              frameId: 1,
+              items: [
+                {
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
+                },
+                {
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
+                },
+                {
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
+                }
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
             }
           ],
+          items: [],
           effects: ['slideLeft', 'slideRight'],
           childTemplateId: 3
         },
         {
           frameId: 2,
-          items: [
+          subLayout: 'hp3',
+          frames: [
             {
-              itemId: 4,
-              type: 'image',
-              url: 'http://abc.com/def4.jpg'
+              frameId: 1,
+              items: [
+                {
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
+                },
+                {
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
+                },
+                {
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
+                }
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
             },
             {
-              itemId: 5,
-              type: 'image',
-              url: 'http://abc.com/def5.jpg'
+              frameId: 2,
+              items: [
+                {
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
+                },
+                {
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
+                },
+                {
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
+                }
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
             },
             {
-              itemId: 6,
-              type: 'image',
-              url: 'http://abc.com/def6.jpg'
+              frameId: 3,
+              items: [
+                {
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
+                },
+                {
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
+                },
+                {
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
+                }
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
             }
           ],
+          items: [],
           effects: ['slideLeft', 'slideRight'],
           childTemplateId: 3
         },
         {
-            frameId: 3,
-            items: [
+          frameId: 3,
+          subLayout: 'hp4',
+          frames: [
+            {
+              frameId: 1,
+              items: [
                 {
-                    itemId: 4,
-                    type: 'image',
-                    url: 'http://abc.com/def4.jpg'
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
                 },
                 {
-                    itemId: 5,
-                    type: 'image',
-                    url: 'http://abc.com/def5.jpg'
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
                 },
                 {
-                    itemId: 6,
-                    type: 'image',
-                    url: 'http://abc.com/def6.jpg'
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
                 }
-            ],
-            effects: ['slideLeft', 'slideRight'],
-            childTemplateId: 3
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
+            },
+            {
+              frameId: 2,
+              items: [
+                {
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
+                },
+                {
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
+                },
+                {
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
+                }
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
+            },
+            {
+              frameId: 3,
+              items: [
+                {
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
+                },
+                {
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
+                },
+                {
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
+                }
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
+            },
+            {
+              frameId: 4,
+              items: [
+                {
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
+                },
+                {
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
+                },
+                {
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
+                }
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
+            }
+          ],
+          items: [],
+          effects: ['slideLeft', 'slideRight'],
+          childTemplateId: 3
         },
         {
-            frameId: 4,
-            items: [
+          frameId: 4,
+          subLayout: 'vp3',
+          frames: [
+            {
+              frameId: 1,
+              items: [
                 {
-                    itemId: 7,
-                    type: 'image',
-                    url: 'http://abc.com/def4.jpg'
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
                 },
                 {
-                    itemId: 8,
-                    type: 'image',
-                    url: 'http://abc.com/def5.jpg'
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
                 },
                 {
-                    itemId: 9,
-                    type: 'image',
-                    url: 'http://abc.com/def6.jpg'
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
                 }
-            ],
-            effects: ['slideLeft', 'slideRight'],
-            childTemplateId: 3
-       }
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
+            },
+            {
+              frameId: 2,
+              items: [
+                {
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
+                },
+                {
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
+                },
+                {
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
+                }
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
+            },
+            {
+              frameId: 3,
+              items: [
+                {
+                  itemId: 4,
+                  type: 'image',
+                  url: 'http://abc.com/def4.jpg'
+                },
+                {
+                  itemId: 5,
+                  type: 'image',
+                  url: 'http://abc.com/def5.jpg'
+                },
+                {
+                  itemId: 6,
+                  type: 'image',
+                  url: 'http://abc.com/def6.jpg'
+                }
+              ],
+              effects: ['slideLeft', 'slideRight'],
+              childTemplateId: 3
+            }
+          ],
+          items: [],
+          effects: ['slideLeft', 'slideRight'],
+          childTemplateId: 3
+        }
       ]
+    };
+  }
+});
+
+// Source: src/uijs/app/modules/socket_client/SocketClient.js
+/**
+ * Created by TrungDQ3 on 6/11/14.
+ */
+
+var SocketClient = Base.extend({
+  ws: null,
+  url: '',
+  defOnOpen: new Deferred(),
+  defOnMessage: new Deferred(),
+  defOnClose: new Deferred(),
+  constructor: function (url) {
+    if (url) {
+      this.connect(url);
     }
+  },
+  connect: function (url) {
+    var self = this;
+    this.url = url;
+    this.ws = new WebSocket(url);
+
+    this.ws.onopen = function() {
+      self.defOnOpen.resolve();
+    };
+    this.ws.onmessage = function (evt) {
+      self.defOnMessage.resolve(evt);
+    };
+    this.ws.onclose = function() {
+      self.defOnClose.resolve();
+    };
+    return this.defOnOpen;
+  },
+  send: function (msg) {
+    this.ws.send(msg);
+  }
+}, {
+  isSupported: function () {
+    return "WebSocket" in window;
   }
 });

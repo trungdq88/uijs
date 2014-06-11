@@ -43,7 +43,7 @@ var BaseView = Base.extend({
       this.childViews[view.id] = view;
       this.node.appendChild(view.node);
     } else {
-      console.log('View ID (' + view.id + ') is not defined or already exist in parent View')
+      console.log('View ID (' + view.id + ') is not defined or already exist in parent View (' + this.id + ')');
     }
   },
   getParentView: function () {

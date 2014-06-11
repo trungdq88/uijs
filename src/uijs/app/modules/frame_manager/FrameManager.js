@@ -7,108 +7,64 @@ var FrameManager = Base.extend({
   masterLayout: '',
   frames: [],
   constructor: function () {
+    $backendService.subscribe().done(function (data) {
+      console.log('Got data, now what?');
+    });
+    $backendService.connectBackend().done(function () {
+      console.log('Connect to backend success');
+    }).fail(function () {
+      console.log('Connect to backend failed');
+    });
+
+    this.loadData();
+    this.show();
+  },
+  loadData: function () {
     var data = $backendService.getFrameData();
 
     for (var i = 0; i < data.frames.length; i++) {
       var frame = new Frame(i + 1);
-      var position = this.getFramePosition(data.masterLayout, i);
+      var frameTmp = data.frames[i];
+      var position = $frameUtils.getFramePosition(data.masterLayout, i, APP_HEIGHT, APP_WIDTH);
       frame.setPosition(position.left, position.top, position.width, position.height);
-      frame.setBackgroundColor('#ccc');
-      /*
-       for (var j = 0; j < dataFrame.items.length; j++) {
-       switch (dataFrame.items[j].type) {
-       case $frameEnum.item.image:
 
-       break;
-       case $frameEnum.item.video:
-       console.log('Not implement yet');
-       break;
-       }
-       }
-       */
+      if (frameTmp.subLayout !== null) {
+        for(var j = 0; j < frameTmp.frames.length; j++){
+          var childFrameTmp = frameTmp.frames[j];
+          var subFrame = new Frame('Sub_' + (j + 1));
+          var positionOfSubFrame = $frameUtils.getSubFramePosition(frameTmp.subLayout, j, position.width, position.height);
+          subFrame.setPosition(positionOfSubFrame.left, positionOfSubFrame.top, positionOfSubFrame.width, positionOfSubFrame.height);
+          subFrame.setBackgroundColor('#ccc');
+
+          // Add slider
+
+          frame.addChildView(subFrame);
+        }
+      } else {
+        frame.setBackgroundColor('#ccc');
+
+        // Add slider
+
+      }// end if
+
+
+//      for (var j = 0; j < data.frames.items.length; j++) {
+//        switch (data.frames.items[j].type) {
+//          case $frameEnum.item.image:
+//              console.log('aaa');
+//            break;
+//          case $frameEnum.item.video:
+//            console.log('Not implement yet');
+//            break;
+//        }
+//      }
+
       this.frames.push(frame);
-    }
-
-    this.show();
+    }// end for
   },
-
   show: function () {
     for (var i = 0; i < this.frames.length; i++) {
       bodyFrame.addChildView(this.frames[i]);
-    }
-  },
-
-  getFramePosition: function (layout, index) {
-    switch (layout) {
-       case $frameEnum.layout.vp1:
-         return {
-                left: FRAME_GAP,
-                top: FRAME_GAP + index * ((APP_HEIGHT - FRAME_GAP * 3)),
-                width: APP_WIDTH - FRAME_GAP*2,
-                height: (APP_HEIGHT - FRAME_GAP * 2)
-         };
-      case $frameEnum.layout.vp2:
-        return {
-          left: FRAME_GAP,
-          top: FRAME_GAP + index * ((APP_HEIGHT - FRAME_GAP * 3) / 2 + FRAME_GAP),
-          width: APP_WIDTH - FRAME_GAP * 2,
-          height: (APP_HEIGHT - FRAME_GAP * 3) / 2
-        };
-      case $frameEnum.layout.vp3:
-        return {
-              left: FRAME_GAP,
-              top: FRAME_GAP + index * ((APP_HEIGHT - FRAME_GAP * 3) / 3 + FRAME_GAP/2),
-              width: APP_WIDTH - FRAME_GAP * 2,
-              height: (APP_HEIGHT - FRAME_GAP * 3 - FRAME_GAP) / 3
-        };
-      case $frameEnum.layout.hp1:
-        return {
-              left: FRAME_GAP,
-              top: FRAME_GAP + index * ((APP_HEIGHT - FRAME_GAP * 3)),
-              width: APP_WIDTH - FRAME_GAP*2,
-              height: (APP_HEIGHT - FRAME_GAP * 2)
-        };
-      case $frameEnum.layout.hp2:
-        return {
-              left: FRAME_GAP + index * (APP_WIDTH - FRAME_GAP) / 2 ,
-              top: FRAME_GAP,
-              width: APP_WIDTH / 2 - FRAME_GAP * 1.5,
-              height: (APP_HEIGHT - FRAME_GAP * 2)
-        };
-      case $frameEnum.layout.hp3:
-        if(index == 1 || index == 2){
-            return {
-                left: (APP_WIDTH + FRAME_GAP) / 2,
-                top: FRAME_GAP + (index - 1)* ((APP_HEIGHT - FRAME_GAP * 3) / 2 + FRAME_GAP),
-                width: APP_WIDTH / 2 - FRAME_GAP * 1.5,
-                height: (APP_HEIGHT - FRAME_GAP * 3) / 2
-            };
-        } else {
-            return {
-                left: FRAME_GAP + index * (APP_WIDTH - FRAME_GAP) / 2 ,
-                top: FRAME_GAP,
-                width: APP_WIDTH / 2 - FRAME_GAP * 1.5,
-                height: (APP_HEIGHT - FRAME_GAP * 2)
-            };
-        }
-      case $frameEnum.layout.hp4:
-        if(index == 0 || index == 1){
-            return {
-                left: FRAME_GAP,
-                top: FRAME_GAP + index * (APP_HEIGHT / 2 - FRAME_GAP / 2),
-                width: APP_WIDTH / 2 - FRAME_GAP * 2 + FRAME_GAP/2,
-                height:  APP_HEIGHT / 2 - FRAME_GAP * 1.5
-            };
-        } else {
-            return {
-                left: APP_WIDTH / 2 + FRAME_GAP / 2,
-                top: FRAME_GAP + (index - 2) * (APP_HEIGHT / 2 - FRAME_GAP / 2),
-                width: APP_WIDTH / 2 - FRAME_GAP * 2 + FRAME_GAP / 2,
-                height:  APP_HEIGHT / 2 - FRAME_GAP * 1.5
-            };
-        }
-      default:
-        return null;
     }
   }
 });

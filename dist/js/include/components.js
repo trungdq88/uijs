@@ -44,7 +44,7 @@ var BaseView = Base.extend({
       this.childViews[view.id] = view;
       this.node.appendChild(view.node);
     } else {
-      console.log('View ID (' + view.id + ') is not defined or already exist in parent View')
+      console.log('View ID (' + view.id + ') is not defined or already exist in parent View (' + this.id + ')');
     }
   },
   getParentView: function () {
@@ -64,6 +64,77 @@ var Frame = BaseView.extend({
   }
 });
 
+// Source: src/uijs/core/components/ui-frameslider/FrameAnimation.js
+/**
+ * Created by TrungDQ3 on 6/11/14.
+ */
+
+var $frameAnimation = {
+  swipeLeft: function (node, revert) {
+    if (!revert) {
+      node.style.webkitTransform = 'translate3d(-100%, 0, 0)';
+    } else {
+      node.style.webkitTransform = 'translate3d(0, 0, 0)';
+    }
+  },
+  swipeRight: function (node, revert) {
+    if (!revert) {
+      node.style.webkitTransform = 'translate3d(100%, 0, 0)';
+    } else {
+      node.style.webkitTransform = 'translate3d(0, 0, 0)';
+    }
+  },
+  swipeUp: function (node, revert) {
+    if (!revert) {
+      node.style.webkitTransform = 'translate3d(0, -100%, 0)';
+    } else {
+      node.style.webkitTransform = 'translate3d(0, 0, 0)';
+    }
+  },
+  swipeDown: function (node, revert) {
+    if (!revert) {
+      node.style.webkitTransform = 'translate3d(0, 100%, 0)';
+    } else {
+      node.style.webkitTransform = 'translate3d(0, 0, 0)';
+    }
+  },
+  zoomUpDown: function (node, revert) {
+    if (!revert) {
+      node.style.webkitTransform = 'scale(0)';
+    } else {
+      node.style.webkitTransform = 'scale(1)';
+    }
+  },
+  flipRight: function (node, revert) {
+    if (!revert) {
+      node.style.webkitTransform = 'perspective(700px) rotateY(90deg)';
+    } else {
+      node.style.webkitTransform = 'perspective(700px) rotateY(0deg)';
+    }
+  },
+  flipLeft: function (node, revert) {
+    if (!revert) {
+      node.style.webkitTransform = 'perspective(700px) rotateY(-90deg)';
+    } else {
+      node.style.webkitTransform = 'perspective(700px) rotateY(0deg)';
+    }
+  },
+  flipUp: function (node, revert) {
+    if (!revert) {
+      node.style.webkitTransform = 'perspective(700px) rotateX(90deg)';
+    } else {
+      node.style.webkitTransform = 'perspective(700px) rotateX(0deg)';
+    }
+  },
+  flipDown: function (node, revert) {
+    if (!revert) {
+      node.style.webkitTransform = 'perspective(700px) rotateX(-90deg)';
+    } else {
+      node.style.webkitTransform = 'perspective(700px) rotateX(0deg)';
+    }
+  }
+};
+
 // Source: src/uijs/core/components/ui-frameslider/FrameSlider.js
 /**
  * Created by TrungDQ3 on 6/10/14.
@@ -74,15 +145,22 @@ var FrameSlider = BaseView.extend({
   timeOut: 3,
   duration: 1,
   images: [],
-  constructor: function (id, images) {
+  effects: [],
+  constructor: function (id, images, effects) {
     this.base('FrameSlider_' + id);
+    this.childViews = {};
     this.setNode(templates.frameslider.slider(this));
-    if (images) this.setImages(images);
+    if (images) {
+      this.setImages(images);
+    }
+    if (effects) {
+      this.setEffects(effects);
+    }
   },
-  setImages: function(images) {
-    var self = this;
+  setImages: function (images) {
+    var self = this,
+      defs = [];
     this.images = images;
-    var defs = [];
     this.hide();
     for (var i = 0; i < images.length; i++) {
       var image = images[i];
@@ -99,6 +177,9 @@ var FrameSlider = BaseView.extend({
       self.startSlideShow();
     });
   },
+  setEffects: function (effects) {
+    this.effects = effects;
+  },
   hide: function () {
     this.node.style.webkitTransition = 'opacity 0.5s';
     this.node.style.opacity = 0;
@@ -112,26 +193,33 @@ var FrameSlider = BaseView.extend({
     for (var i = 0; i < this.images.length; i++) {
       this.images[i].node.style.zIndex = i + 1;
     }
+    var moveLayers = function(index) {
+      self.images[index].node.style.zIndex = 1;
+      for (var i = 0; i < self.images.length; i++) {
+        if (i != index) {
+          self.images[i].node.style.zIndex = +self.images[i].node.style.zIndex + 1;
+        }
+      }
+    };
     var doTransition = function() {
       if (self.currentIndex < 0) {
         self.currentIndex = self.images.length - 1;
       }
-      self.images[self.currentIndex].node.style.webkitTransform =
-        'translate3d(' + (-self.width) + 'px, 0px, 0px)';
+      var anim = $frameAnimation[self.getRandomEffect()];
 
-      self.currentIndex--;
+      if (anim) {
+        anim(self.images[self.currentIndex].node);
 
-      setTimeout(function() {
-        var targetIndex = self.currentIndex + 1;
-        self.images[targetIndex].node.style.zIndex = 1;
-        self.images[targetIndex].node.style.webkitTransform =
-          'translate3d(0px, 0px, 0px)';
-        for (var i = 0; i < self.images.length; i++) {
-          if (i != targetIndex) {
-            self.images[i].node.style.zIndex = +self.images[i].node.style.zIndex + 1;
-          }
-        }
-      }, self.duration * 1000);
+        self.currentIndex--;
+
+        setTimeout(function() {
+          var targetIndex = self.currentIndex + 1;
+          anim(self.images[targetIndex].node, true);
+          moveLayers(targetIndex);
+        }, self.duration * 1000);
+      } else {
+        moveLayers(self.currentIndex--);
+      }
       setTimeout(doTransition, self.timeOut * 1000);
     };
     setTimeout(doTransition, this.timeOut * 1000);
@@ -149,6 +237,9 @@ var FrameSlider = BaseView.extend({
       var image = this.images[i];
       image.node.style.webkitTransition = '-webkit-transform ' + this.duration + 's';
     }
+  },
+  getRandomEffect: function () {
+    return this.effects[Math.floor(Math.random()*this.effects.length)] || '';
   }
 });
 
@@ -164,7 +255,9 @@ var ImageView = BaseView.extend({
     var self = this;
     this.base('ImageView_' + id);
 
-    if (src) this.imageSource = src;
+    if (src) {
+      this.imageSource = src;
+    }
 
     this.setNode(templates.imageview.image(this));
 

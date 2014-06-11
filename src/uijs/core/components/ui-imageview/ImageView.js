@@ -9,7 +9,9 @@ var ImageView = BaseView.extend({
     var self = this;
     this.base('ImageView_' + id);
 
-    if (src) this.imageSource = src;
+    if (src) {
+      this.imageSource = src;
+    }
 
     this.setNode(templates.imageview.image(this));
 
