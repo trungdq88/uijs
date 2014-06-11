@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title></title>
+    <link rel="stylesheet" href="uijs/_debug/style.css"/>
+
+    <script>
+        var DEBUG_MODE = true;
+    </script>
+
+    <!-- TEMPLATES -->
+    <script src="uijs/_debug/templates.js"></script>
+
+    <!-- LIBS -->
+    <script src="uijs/core/libs/base.js"></script>
+    <script src="uijs/core/libs/dollar.js"></script>
+    <script src="uijs/core/libs/soyutils.js"></script>
+    <script src="uijs/core/libs/deferred.js"></script>
+
+    <!-- UTILS -->
+    <script src="uijs/core/utils/Topic.js"></script>
+
+
+    <!-- CORE INIT -->
+    <script src="uijs/core/init.js"></script>
+
+    <!--&lt;!&ndash; COMPONENTS &ndash;&gt;-->
+    <!--<script src="uijs/core/components/ui-baseview/BaseView.js"></script>-->
+    <!--<script src="uijs/core/components/ui-frameview/FrameView.js"></script>-->
+    <!--<script src="uijs/core/components/ui-imageview/ImageView.js"></script>-->
+    <!--<script src="uijs/core/components/ui-frameslider/FrameSlider.js"></script>-->
+    <!--<script src="uijs/core/components/ui-frameslider/FrameAnimation.js"></script>-->
+
+    <!--&lt;!&ndash; MODULES &ndash;&gt;-->
+    <!--<script src="uijs/app/modules/config/Config.js"></script>-->
+    <!--<script src="uijs/app/modules/frame_manager/FrameEnums.js"></script>-->
+    <!--<script src="uijs/app/modules/frame_manager/FrameUtils.js"></script>-->
+    <!--<script src="uijs/app/modules/frame_manager/FrameManager.js"></script>-->
+    <!--<script src="uijs/app/modules/frame_manager/BackendService.js"></script>-->
+    <!--<script src="uijs/app/modules/socket_client/SocketClient.js"></script>-->
+
+    <!--MODULES INIT -->
+    <!--<script src="uijs/app/modules/frame_manager/init.js"></script>-->
+
+    <!-- SCRIPT LOADER FOR DEBUG -->
+
+    <script>
+        var components = [],
+            defs = [],
+            i = 0;
+
+        function addScript(path) {
+            var d = new Deferred();
+            var s = document.createElement('script');
+            s.onload = function () {
+                d.resolve();
+            };
+            s.src = path;
+            document.head.appendChild(s);
+            return d;
+        }
+        function loadScripts(dir) {
+            var d = new Deferred();
+            var loadScriptFiles = function (obj) {
+                $.getJSON(dir + obj + '/index.json', function (files) {
+                    var js = files['js'];
+                    if (js) {
+                        for (var j = 0; j < js.length; j++) {
+                            var file = js[j];
+                            defs.push(addScript(dir + obj + '/' + file));
+                        }
+
+                        if (++i < components.length) {
+                            loadScriptFiles(components[i]);
+                        } else {
+                            d.resolve();
+                        }
+                    }
+                });
+            };
+            $.getJSON(dir + 'index.json', function (data) {
+                components = data;
+                i = 0;
+                if (components && components.length > 0) {
+                    loadScriptFiles(components[i]);
+                } else {
+                    d.resolve();
+                }
+            });
+            return d;
+        }
+
+
+        defs.push(addScript('uijs/app/main.js'));
+        loadScripts('uijs/core/components/').done(function () {
+            loadScripts('uijs/app/components/').done(function () {
+                loadScripts('uijs/app/modules/').done(function () {
+                    Deferred.when(Deferred, defs).done(function() {
+                        $coreStartup.resolve();
+                    });
+                });
+            });
+        });
+
+
+    </script>
+
+</head>
+<script>
+    document.open();
+    document.write('<body></body>');
+    document.close();
+</script>
+</html>

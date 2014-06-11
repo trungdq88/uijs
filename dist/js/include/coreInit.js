@@ -2,23 +2,12 @@
 /**
  * Created by TrungDQ3 on 6/9/14.
  */
-
-var $bodyFrame = new FrameView('bodyFrame');
-$bodyFrame.setPosition(0, 0, APP_WIDTH, APP_HEIGHT);
-$bodyFrame.setBackgroundColor('#eee');
-
-var initUIJS = function() {
-  document.body.style.position = 'absolute';
-  document.body.style.width = APP_WIDTH + 'px';
-  document.body.style.height = APP_HEIGHT + 'px';
-  document.body.style.top = '0px';
-  document.body.style.left = '0px';
-  document.body.appendChild($bodyFrame.node);
-  main();
-};
+var $coreStartup = new Deferred();
 
 document.addEventListener('DOMContentLoaded', function(){
-  initUIJS();
+  if (!DEBUG_MODE) {
+    $coreStartup.resolve();
+  }
 });
 
 // Source: src/uijs/app/main.js
@@ -26,8 +15,21 @@ document.addEventListener('DOMContentLoaded', function(){
  * Created by TrungDQ3 on 6/9/14.
  */
 
+$coreStartup.done(function () {
+  document.body.style.position = 'absolute';
+  document.body.style.width = APP_WIDTH + 'px';
+  document.body.style.height = APP_HEIGHT + 'px';
+  document.body.style.top = '0px';
+  document.body.style.left = '0px';
+
+  window.$bodyFrame = new FrameView('bodyFrame');
+  window.$bodyFrame.setPosition(0, 0, APP_WIDTH, APP_HEIGHT);
+  window.$bodyFrame.setBackgroundColor('#eee');
+  document.body.appendChild(window.$bodyFrame.node);
+});
+
+/*
 var main = function () {
-  /*
   var a = new ImageView('image1', 'http://www.byui.edu/images/agriculture-life-sciences/flower.jpg'),
     b = new ImageView('image2', 'http://4.bp.blogspot.com/_89oxiIwvtak/STczHGkOYTI/AAAAAAAAFNg/lEcEBLdlToo/s400/' +
       'Tropical+Plumeria+Flower.jpg'),
@@ -81,5 +83,5 @@ var main = function () {
   $(target2.node).addClass('frame_slider');
   $(target3.node).addClass('frame_slider');
   $(target4.node).addClass('frame_slider');
-  */
 };
+ */

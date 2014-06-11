@@ -74,8 +74,8 @@ module.exports = function(grunt) {
     },
     copy: {
       main: {
-        src: 'src/index.html',
-        dest: 'dist/index.html'
+        src: 'src/app.html',
+        dest: 'dist/app.html'
       },
       template: {
         src: '<%= soycompile.templates.dest %>',
@@ -173,11 +173,10 @@ module.exports = function(grunt) {
           '<%= soycompile.templates.dest %>',
           /** '<%= concat.libraries.dest %>', **/
           '<%= concat.utils.dest %>',
+          '<%= concat.coreInit.dest %>',
           '<%= concat.coreComponents.dest %>',
           '<%= concat.appModules.dest %>',
-          '<%= concat.appComponents.dest %>',
-          '<%= concat.coreInit.dest %>',
-          '<%= concat.moduleInit.dest %>'
+          '<%= concat.appComponents.dest %>'
         ],
         dest: 'dist/js/app-precompiled.js',
         nonull: true

@@ -3,6 +3,7 @@
     "FrameEnums.js",
     "FrameUtils.js",
     "FrameManager.js",
-    "BackendService.js"
+    "BackendService.js",
+    "init.js"
   ]
 }
