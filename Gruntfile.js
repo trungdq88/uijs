@@ -3,7 +3,8 @@ module.exports = function(grunt) {
   var dirs = {
     coreComponentsDir: 'src/uijs/core/components/',
     appComponentsDir: 'src/uijs/app/components/',
-    moduleDir: 'src/uijs/app/modules/'
+    appModuleDir: 'src/uijs/app/modules/',
+    appLibsDir: 'src/uijs/app/libs/'
   };
 
   function loadJsonData(dir, type) {
@@ -12,10 +13,10 @@ module.exports = function(grunt) {
     for (var i = 0; i < coms.length; i++) {
       var files = grunt.file.readJSON(dir + coms[i] + '/index.json')[type];
       if (files) {
-          for (var j = 0; j < files.length; j++) {
-            var path = dir + coms[i] + '/' + files[j];
-            result.push(path);
-          }
+        for (var j = 0; j < files.length; j++) {
+          var path = dir + coms[i] + '/' + files[j];
+          result.push(path);
+        }
       }
     }
     return result;
@@ -23,9 +24,19 @@ module.exports = function(grunt) {
 
   function loadModulesInit() {
     var result = [];
-    var coms = grunt.file.readJSON(dirs.moduleDir + 'index.json');
+    var coms = grunt.file.readJSON(dirs.appModuleDir + 'index.json');
     for (var i = 0; i < coms.length; i++) {
-      var path = dirs.moduleDir + coms[i] + '/init.js';
+      var path = dirs.appModuleDir + coms[i] + '/init.js';
+      result.push(path);
+    }
+    return result;
+  }
+
+  function loadAppLibs() {
+    var result = [];
+    var coms = grunt.file.readJSON(dirs.appLibsDir + 'index.json');
+    for (var i = 0; i < coms.length; i++) {
+      var path = dirs.appLibsDir + coms[i];
       result.push(path);
     }
     return result;
@@ -48,7 +59,7 @@ module.exports = function(grunt) {
     return loadJsonData(dirs.appComponentsDir, type);
   }
   function moduleFiles(type) {
-    return loadJsonData(dirs.moduleDir, type);
+    return loadJsonData(dirs.appModuleDir, type);
   }
 
   function lintFiles() {
@@ -155,6 +166,11 @@ module.exports = function(grunt) {
         dest: 'dist/js/include/appModules.js',
         nonull: true
       },
+      appLibs: {
+        src: loadAppLibs(),
+        dest: 'dist/js/include/appLibs.js',
+        nonull: true
+      },
       coreInit: {
         src: [
           'src/uijs/core/init.js',
@@ -171,10 +187,11 @@ module.exports = function(grunt) {
       app: {
         src: [
           '<%= soycompile.templates.dest %>',
-          /** '<%= concat.libraries.dest %>', **/
+        /** '<%= concat.libraries.dest %>', **/
           '<%= concat.utils.dest %>',
           '<%= concat.coreInit.dest %>',
           '<%= concat.coreComponents.dest %>',
+          '<%= concat.appLibs.dest %>',
           '<%= concat.appModules.dest %>',
           '<%= concat.appComponents.dest %>'
         ],
