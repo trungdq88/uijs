@@ -20,12 +20,13 @@
 
     <!-- COMPONENTS -->
     <script src="uijs/core/components/ui-baseview/BaseView.js"></script>
-    <script src="uijs/core/components/ui-frame/Frame.js"></script>
+    <script src="uijs/core/components/ui-frameview/FrameView.js"></script>
     <script src="uijs/core/components/ui-imageview/ImageView.js"></script>
     <script src="uijs/core/components/ui-frameslider/FrameSlider.js"></script>
     <script src="uijs/core/components/ui-frameslider/FrameAnimation.js"></script>
 
     <!-- MODULES -->
+    <script src="uijs/app/modules/config/Config.js"></script>
     <script src="uijs/app/modules/frame_manager/FrameEnums.js"></script>
     <script src="uijs/app/modules/frame_manager/FrameUtils.js"></script>
     <script src="uijs/app/modules/frame_manager/FrameManager.js"></script>
@@ -33,7 +34,6 @@
     <script src="uijs/app/modules/socket_client/SocketClient.js"></script>
 
     <!-- CORE INIT -->
-    <script src="uijs/app/conf/conf.js"></script>
     <script src="uijs/core/init.js"></script>
     <script src="uijs/app/main.js"></script>
 
@@ -42,8 +42,6 @@
 
     <!-- SCRIPT LOADER FOR DEBUG -->
     <!--
-    <script src="uijs/core/libs/dollar.js"></script>
-    <script src="uijs/core/libs/base.js"></script>
     <script>
         (function loadScripts() {
             $.getJSON('uijs/core/components/index.json', function(data) {

@@ -1,4 +1,4 @@
-// This file was automatically generated from frame.soy.
+// This file was automatically generated from frame_view.soy.
 // Please don't edit this file by hand.
 
 if (typeof templates == 'undefined') { var templates = {}; }

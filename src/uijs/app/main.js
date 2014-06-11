@@ -28,10 +28,10 @@ var main = function () {
     slider2 = new FrameSlider('slider2'),
     slider3 = new FrameSlider('slider3'),
     slider4 = new FrameSlider('slider4'),
-    target1 = bodyFrame.childViews.Frame_1,
-    target2 = bodyFrame.childViews.Frame_2,
-    target3 = bodyFrame.childViews.Frame_3,
-    target4 = bodyFrame.childViews.Frame_4;
+    target1 = $bodyFrame.childViews.Frame_1,
+    target2 = $bodyFrame.childViews.Frame_2,
+    target3 = $bodyFrame.childViews.Frame_3,
+    target4 = $bodyFrame.childViews.Frame_4;
 
   slider1.setPosition(0, 0, target1.width, target1.height);
   slider1.setImages([a, b, c]);

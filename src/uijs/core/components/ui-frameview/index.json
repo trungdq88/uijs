@@ -1,0 +1,8 @@
+{
+  "js": [
+    "FrameView.js"
+  ],
+  "soy": [
+    "frame_view.soy"
+  ]
+}

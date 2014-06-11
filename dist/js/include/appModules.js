@@ -1,3 +1,12 @@
+// Source: src/uijs/app/modules/config/Config.js
+/**
+ * Created by TrungDQ3 on 6/9/14.
+ */
+
+var APP_WIDTH = 1000;
+var APP_HEIGHT = 800;
+var FRAME_GAP = 10;
+
 // Source: src/uijs/app/modules/frame_manager/FrameEnums.js
 /**
  * Created by TrungDQ3 on 6/9/14.
@@ -183,10 +192,23 @@ var FrameManager = Base.extend({
   masterLayout: '',
   frames: [],
   constructor: function () {
+    $backendService.subscribe().done(function (data) {
+      console.log('Got data, now what?');
+    });
+    $backendService.connectBackend().done(function () {
+      console.log('Connect to backend success');
+    }).fail(function () {
+      console.log('Connect to backend failed');
+    });
+
+    this.loadData();
+    this.show();
+  },
+  loadData: function () {
     var data = $backendService.getFrameData();
 
     for (var i = 0; i < data.frames.length; i++) {
-      var frame = new Frame(i + 1);
+      var frame = new FrameView(i + 1);
       var frameTmp = data.frames[i];
       var position = $frameUtils.getFramePosition(data.masterLayout, i, APP_HEIGHT, APP_WIDTH);
       frame.setPosition(position.left, position.top, position.width, position.height);
@@ -194,7 +216,7 @@ var FrameManager = Base.extend({
       if (frameTmp.subLayout !== null) {
         for(var j = 0; j < frameTmp.frames.length; j++){
           var childFrameTmp = frameTmp.frames[j];
-          var subFrame = new Frame('Sub_' + (j + 1));
+          var subFrame = new FrameView('Sub_' + (j + 1));
           var positionOfSubFrame = $frameUtils.getSubFramePosition(frameTmp.subLayout, j, position.width, position.height);
           subFrame.setPosition(positionOfSubFrame.left, positionOfSubFrame.top, positionOfSubFrame.width, positionOfSubFrame.height);
           subFrame.setBackgroundColor('#ccc');
@@ -224,13 +246,10 @@ var FrameManager = Base.extend({
 
       this.frames.push(frame);
     }// end for
-
-    this.show();
   },
-
   show: function () {
     for (var i = 0; i < this.frames.length; i++) {
-      bodyFrame.addChildView(this.frames[i]);
+      $bodyFrame.addChildView(this.frames[i]);
     }
   }
 });
@@ -240,8 +259,10 @@ var FrameManager = Base.extend({
  * Created by TrungDQ3 on 6/9/14.
  */
 
-var BackendService = Base.extend({
-  BACKEND_SOCKET_URL: '',
+var BackendService = Topic.extend({
+  BACKEND_SOCKET_URL: 'ws://localhost:9998/echo',
+  socket: null,
+  _isListening: false,
   getFrameData: function () {
     return {
       templateId: 1,
@@ -549,6 +570,27 @@ var BackendService = Base.extend({
         }
       ]
     };
+  },
+  connectBackend: function () {
+    var self = this;
+    this.socket = new SocketClient();
+    return this.socket.connect(this.BACKEND_SOCKET_URL).done(function () {
+      self._isListening = true;
+      self.startSubscribe();
+    });
+  },
+  disconnectBackend: function () {
+    this._isListening = false;
+    this.socket.close();
+  },
+  startSubscribe: function () {
+    var self = this;
+    this.socket.subscribe().done(function (data) {
+      self.publish(data);
+      if (self._isListening) {
+        self.startSubscribe();
+      }
+    });
   }
 });
 
@@ -557,35 +599,37 @@ var BackendService = Base.extend({
  * Created by TrungDQ3 on 6/11/14.
  */
 
-var SocketClient = Base.extend({
-  ws: null,
+var SocketClient = Topic.extend({
+  _ws: null,
   url: '',
-  defOnOpen: new Deferred(),
-  defOnMessage: new Deferred(),
-  defOnClose: new Deferred(),
   constructor: function (url) {
     if (url) {
       this.connect(url);
     }
+    this.base();
   },
   connect: function (url) {
+    var d = new Deferred();
     var self = this;
     this.url = url;
-    this.ws = new WebSocket(url);
+    this._ws = new WebSocket(url);
 
-    this.ws.onopen = function() {
-      self.defOnOpen.resolve();
+    this._ws.onopen = function() {
+      d.resolve();
     };
-    this.ws.onmessage = function (evt) {
-      self.defOnMessage.resolve(evt);
+    this._ws.onmessage = function (evt) {
+      self.publish(evt);
     };
-    this.ws.onclose = function() {
-      self.defOnClose.resolve();
+    this._ws.onclose = function() {
+      d.reject();
     };
-    return this.defOnOpen;
+    return d;
   },
   send: function (msg) {
-    this.ws.send(msg);
+    this._ws.send(msg);
+  },
+  close: function () {
+    this._ws.close();
   }
 }, {
   isSupported: function () {

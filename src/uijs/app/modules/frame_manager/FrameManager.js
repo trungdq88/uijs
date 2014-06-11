@@ -23,7 +23,7 @@ var FrameManager = Base.extend({
     var data = $backendService.getFrameData();
 
     for (var i = 0; i < data.frames.length; i++) {
-      var frame = new Frame(i + 1);
+      var frame = new FrameView(i + 1);
       var frameTmp = data.frames[i];
       var position = $frameUtils.getFramePosition(data.masterLayout, i, APP_HEIGHT, APP_WIDTH);
       frame.setPosition(position.left, position.top, position.width, position.height);
@@ -31,7 +31,7 @@ var FrameManager = Base.extend({
       if (frameTmp.subLayout !== null) {
         for(var j = 0; j < frameTmp.frames.length; j++){
           var childFrameTmp = frameTmp.frames[j];
-          var subFrame = new Frame('Sub_' + (j + 1));
+          var subFrame = new FrameView('Sub_' + (j + 1));
           var positionOfSubFrame = $frameUtils.getSubFramePosition(frameTmp.subLayout, j, position.width, position.height);
           subFrame.setPosition(positionOfSubFrame.left, positionOfSubFrame.top, positionOfSubFrame.width, positionOfSubFrame.height);
           subFrame.setBackgroundColor('#ccc');
@@ -64,7 +64,7 @@ var FrameManager = Base.extend({
   },
   show: function () {
     for (var i = 0; i < this.frames.length; i++) {
-      bodyFrame.addChildView(this.frames[i]);
+      $bodyFrame.addChildView(this.frames[i]);
     }
   }
 });

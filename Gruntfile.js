@@ -1,7 +1,8 @@
 module.exports = function(grunt) {
 
   var dirs = {
-    componentsDir: 'src/uijs/core/components/',
+    coreComponentsDir: 'src/uijs/core/components/',
+    appComponentsDir: 'src/uijs/app/components/',
     moduleDir: 'src/uijs/app/modules/'
   };
 
@@ -32,23 +33,26 @@ module.exports = function(grunt) {
 
   function imageFilePaths() {
     var result = [];
-    var coms = grunt.file.readJSON(dirs.componentsDir + 'index.json');
+    var coms = grunt.file.readJSON(dirs.coreComponentsDir + 'index.json');
     for (var i = 0; i < coms.length; i++) {
-      var path = dirs.componentsDir + coms[i] + '/img/*';
+      var path = dirs.coreComponentsDir + coms[i] + '/img/*';
       result.push(path);
     }
     return result;
   }
 
-  function componentFiles(type) {
-    return loadJsonData(dirs.componentsDir, type);
+  function coreComponentFiles(type) {
+    return loadJsonData(dirs.coreComponentsDir, type);
+  }
+  function appComponentFiles(type) {
+    return loadJsonData(dirs.appComponentsDir, type);
   }
   function moduleFiles(type) {
     return loadJsonData(dirs.moduleDir, type);
   }
 
   function lintFiles() {
-    var r1 = componentFiles('js');
+    var r1 = coreComponentFiles('js');
     var r2 = moduleFiles('js');
     var r3 = loadModulesInit();
     return r1.concat(r2).concat(r3);
@@ -61,7 +65,7 @@ module.exports = function(grunt) {
 
     soycompile: {
       templates: {
-        src: componentFiles('soy'),
+        src: coreComponentFiles('soy'),
         dest: 'dist/js/include/templates.js',
         options: {
           jarPath: "soy-compiler"
@@ -106,7 +110,7 @@ module.exports = function(grunt) {
         }
       },
       css: {
-        src: componentFiles('css'),
+        src: coreComponentFiles('css'),
         dest: 'dist/css/include/components.css',
         nonull: true
       },
@@ -136,19 +140,23 @@ module.exports = function(grunt) {
         dest: 'dist/js/include/utils.js',
         nonull: true
       },
-      components: {
-        src: componentFiles('js'),
-        dest: 'dist/js/include/components.js',
+      coreComponents: {
+        src: coreComponentFiles('js'),
+        dest: 'dist/js/include/coreComponents.js',
         nonull: true
       },
-      modules: {
+      appComponents: {
+        src: appComponentFiles('js'),
+        dest: 'dist/js/include/appComponents.js',
+        nonull: true
+      },
+      appModules: {
         src: moduleFiles('js'),
-        dest: 'dist/js/include/modules.js',
+        dest: 'dist/js/include/appModules.js',
         nonull: true
       },
       coreInit: {
         src: [
-          'src/uijs/app/conf/conf.js',
           'src/uijs/core/init.js',
           'src/uijs/app/main.js'
         ],
@@ -165,8 +173,9 @@ module.exports = function(grunt) {
           '<%= soycompile.templates.dest %>',
           /** '<%= concat.libraries.dest %>', **/
           '<%= concat.utils.dest %>',
-          '<%= concat.components.dest %>',
-          '<%= concat.modules.dest %>',
+          '<%= concat.coreComponents.dest %>',
+          '<%= concat.appModules.dest %>',
+          '<%= concat.appComponents.dest %>',
           '<%= concat.coreInit.dest %>',
           '<%= concat.moduleInit.dest %>'
         ],

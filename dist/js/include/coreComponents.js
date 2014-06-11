@@ -52,13 +52,13 @@ var BaseView = Base.extend({
   }
 });
 
-// Source: src/uijs/core/components/ui-frame/Frame.js
+// Source: src/uijs/core/components/ui-frameview/FrameView.js
 /**
  * Created by TrungDQ3 on 6/9/14.
  */
-var Frame = BaseView.extend({
+var FrameView = BaseView.extend({
   constructor: function (id) {
-    this.base('Frame_' + id);
+    this.base('FrameView_' + id);
     this.childViews = {};
     this.setNode(templates.frame.frame(this));
   }
