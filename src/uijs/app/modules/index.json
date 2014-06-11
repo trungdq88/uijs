@@ -1,1 +1,5 @@
-[]
+[
+  "config",
+  "frame_manager",
+  "socket_client"
+]

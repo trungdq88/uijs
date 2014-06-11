@@ -1,0 +1,9 @@
+{
+  "js": [
+    "FrameEnums.js",
+    "FrameUtils.js",
+    "FrameManager.js",
+    "BackendService.js",
+    "init.js"
+  ]
+}
