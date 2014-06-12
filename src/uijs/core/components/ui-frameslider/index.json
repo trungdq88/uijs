@@ -1,12 +1,12 @@
 {
-  "js": [
-    "FrameAnimation.js",
-    "FrameSlider.js"
-  ],
-  "soy": [
-    "frame_slider.soy"
-  ],
-  "css": [
-    "frame_slider.less"
-  ]
+    "js": [
+        "FrameAnimation.js",
+        "FrameSlider.js"
+    ],
+    "soy": [
+        "frame_slider.soy"
+    ],
+    "css": [
+        "frame_slider.less"
+    ]
 }

@@ -1,8 +1,8 @@
 {
-  "js": [
-    "ImageView.js"
-  ],
-  "soy": [
-    "image_view.soy"
-  ]
+    "js": [
+        "ImageView.js"
+    ],
+    "soy": [
+        "image_view.soy"
+    ]
 }

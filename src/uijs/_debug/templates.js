@@ -18,7 +18,7 @@ if (typeof templates.frameslider == 'undefined') { templates.frameslider = {}; }
 
 
 templates.frameslider.slider = function(opt_data, opt_ignored) {
-  return '<div id="' + soy.$$escapeHtml(opt_data.id) + '"></div>';
+  return '<div id="' + soy.$$escapeHtml(opt_data.id) + '" class="frame_slider"></div>';
 };
 
 ;
