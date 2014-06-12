@@ -1,0 +1,6 @@
+{
+    "js": [
+        "BackendService.js",
+        "init.js"
+    ]
+}
