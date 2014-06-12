@@ -16,7 +16,18 @@ var $frameEnum = {
     video: 'video'
   },
   effect: {
-    slideLeft: 'slideLeft',
-    slideRight: 'slideRight'
+    swipeLeft: 'swipeLeft',
+    swipeRight: 'swipeRight',
+    swipeUp: 'swipeUp',
+    swipeDown: 'swipeUp',
+    zoomUpDown: 'zoomUpDown',
+    flipRight: 'flipRight',
+    flipLeft: 'flipLeft',
+    flipUp: 'flipUp',
+    flipDown: 'flipDown'
+  },
+  method: {
+    require_device_authenticate: 'require_device_authenticate',
+    device_authenticate: 'device_authenticate'
   }
 };

@@ -8,6 +8,7 @@ var FrameManager = Base.extend({
   frames: [],
   constructor: function () {
     $backendService.subscribe().done(function (data) {
+      console.log(data);
       console.log('Got data, now what?');
     });
     $backendService.connectBackend().done(function () {
@@ -23,43 +24,32 @@ var FrameManager = Base.extend({
     var data = $backendService.getFrameData();
 
     for (var i = 0; i < data.frames.length; i++) {
-      var frame = new FrameView(i + 1);
-      var frameTmp = data.frames[i];
-      var position = $frameUtils.getFramePosition(data.masterLayout, i, APP_HEIGHT, APP_WIDTH);
-      frame.setPosition(position.left, position.top, position.width, position.height);
+      var frameData = data.frames[i];
+      var frameView = new FrameView(frameData.frameId);
+      var _pos1 = $frameUtils.getFramePosition(data.masterLayout, i, APP_HEIGHT, APP_WIDTH);
+      frameView.setPosition(_pos1.left, _pos1.top, _pos1.width, _pos1.height);
 
-      if (frameTmp.subLayout !== null) {
-        for(var j = 0; j < frameTmp.frames.length; j++){
-          var childFrameTmp = frameTmp.frames[j];
-          var subFrame = new FrameView('Sub_' + (j + 1));
-          var positionOfSubFrame = $frameUtils.getSubFramePosition(frameTmp.subLayout, j, position.width, position.height);
-          subFrame.setPosition(positionOfSubFrame.left, positionOfSubFrame.top, positionOfSubFrame.width, positionOfSubFrame.height);
-          subFrame.setBackgroundColor('#ccc');
+      if (frameData.subLayout !== null) {
+        for(var j = 0; j < frameData.frames.length; j++){
+          var subFrameView = new FrameView(frameData.frames[j].frameId);
+          var _pos2 = $frameUtils.getSubFramePosition(
+            frameData.subLayout, j, _pos1.width, _pos1.height);
+          subFrameView.setPosition(_pos2.left, _pos2.top, _pos2.width, _pos2.height);
+          subFrameView.setBackgroundColor('#ccc');
 
-          // Add slider
+          $frameUtils.addSliderToFrame(frameData.frames[j], subFrameView);
 
-          frame.addChildView(subFrame);
+          frameView.addChildView(subFrameView);
         }
       } else {
-        frame.setBackgroundColor('#ccc');
+        frameView.setBackgroundColor('#ccc');
 
-        // Add slider
+        $frameUtils.addSliderToFrame(frameData, frameView);
 
       }// end if
 
 
-//      for (var j = 0; j < data.frames.items.length; j++) {
-//        switch (data.frames.items[j].type) {
-//          case $frameEnum.item.image:
-//              console.log('aaa');
-//            break;
-//          case $frameEnum.item.video:
-//            console.log('Not implement yet');
-//            break;
-//        }
-//      }
-
-      this.frames.push(frame);
+      this.frames.push(frameView);
     }// end for
   },
   show: function () {

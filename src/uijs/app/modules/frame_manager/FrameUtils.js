@@ -145,5 +145,23 @@ var $frameUtils = {
       default:
         return null;
     }
+  },
+  addSliderToFrame: function(frameData, frameView) {
+    var items = frameData.items;
+    if (items && items.length > 0) {
+      var slider = new FrameSlider(frameData.frameId);
+      slider.setPosition(0, 0, frameView.width, frameView.height);
+      var itemViews = [];
+      for (var k = 0; k < items.length; k++) {
+        if (items[k].type == $frameEnum.item.image) {
+          itemViews.push(new ImageView(k, items[k].url));
+        }
+      }
+      slider.setImages(itemViews);
+      slider.setEffects(frameData.effects);
+      slider.setTimeout(6 + Math.random() * 6);
+      frameView.addChildView(slider);
+      $(frameView.node).addClass('frame_slider_container');
+    }
   }
 };
