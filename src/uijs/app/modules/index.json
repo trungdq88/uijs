@@ -1,7 +1,1 @@
-[
-    "config",
-    "backend_service",
-    "device_auth",
-    "frame_manager",
-    "socket_client"
-]
+[]

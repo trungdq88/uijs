@@ -1,8 +1,0 @@
-{
-    "js": [
-        "FrameEnums.js",
-        "FrameUtils.js",
-        "FrameManager.js",
-        "init.js"
-    ]
-}
