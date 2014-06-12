@@ -4,10 +4,10 @@
  */
 var $coreStartup = new Deferred();
 
-document.addEventListener('DOMContentLoaded', function(){
-  if (!DEBUG_MODE) {
-    $coreStartup.resolve();
-  }
+document.addEventListener('DOMContentLoaded', function () {
+    if (!DEBUG_MODE) {
+        $coreStartup.resolve();
+    }
 });
 
 // Source: src/uijs/app/main.js
