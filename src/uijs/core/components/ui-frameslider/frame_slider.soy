@@ -4,6 +4,8 @@
  */
 {template .slider}
 <div id="{$id}" class="frame_slider">
+    <div id="{$id}_loading" class="frame_slider_loading"></div>
+    <div id="{$id}_content" class="frame_slider_content">
     /**
     {foreach $image in $images}
         {call templates.imageview.image data="all"}
@@ -12,5 +14,6 @@
         {/call}
     {/foreach}
     **/
+    </div>
 </div>
 {/template}
