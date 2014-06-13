@@ -1,0 +1,11 @@
+{namespace templates.videoview}
+
+/**
+ * @param id Integer
+ * @param itemSource Integer
+ */
+{template .video}
+    <video id="{$id}" loop>
+        <source id="{$id}_source" src="{$itemSource}">
+    </video>
+{/template}

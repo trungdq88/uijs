@@ -1,0 +1,38 @@
+<script src="../libs/base.js"></script>
+<script src="../libs/deferred.js"></script>
+<script src="../utils/Topic.js"></script>
+<script src="../utils/DeferredPool.js"></script>
+<script>
+    var deferredPool = new RequestPool();
+    deferredPool.MAX_REQUEST = 3;
+    var d1 = new Deferred(); d1.name = 'd1';
+    var d2 = new Deferred(); d2.name = 'd2';
+    var d3 = new Deferred(); d3.name = 'd3';
+    var d4 = new Deferred(); d4.name = 'd4';
+    var d5 = new Deferred(); d5.name = 'd5';
+    var actualResult = '';
+    deferredPool.sendRequest(d1).done(function(data) {
+        actualResult += ('d1: ' + data);
+    });
+    deferredPool.sendRequest(d2).done(function(data) {
+        actualResult += ('d2: ' + data);
+    });
+    deferredPool.sendRequest(d3).done(function(data) {
+        actualResult += ('d3: ' + data);
+    });
+    deferredPool.sendRequest(d4).done(function(data) {
+        actualResult += ('d4: ' + data);
+    });
+    deferredPool.sendRequest(d5).done(function(data) {
+        actualResult += ('d5: ' + data);
+    });
+    d4.resolve(444);
+    d1.resolve(111);
+    d2.resolve(222);
+    d3.resolve(333);
+    d5.resolve(555);
+    console.log(actualResult);
+    if ('d4: 444d1: 111d2: 222d3: 333d5: 555' === actualResult) {
+        console.log("OK");
+    }
+</script>

@@ -19,14 +19,14 @@ var FrameManager = Base.extend({
     loadData: function () {
         var self = this;
         $backendService.getTemplate(1).done(function (data) {
-            for (var i = 0; i < data.frames.length; i++) {
+            for (var i = 0; i < data.frames.length && i < +data.layout.name.split('p')[1]; i++) {
                 var frameData = data.frames[i];
                 var frameView = new FrameView(frameData.id);
                 var _pos1 = $frameUtils.getFramePosition(data.layout.name, i, APP_HEIGHT, APP_WIDTH);
                 frameView.setPosition(_pos1.left, _pos1.top, _pos1.width, _pos1.height);
 
                 if (frameData.layout !== null) {
-                    for (var j = 0; j < frameData.frames.length; j++) {
+                    for (var j = 0; j < frameData.frames.length && j < +frameData.layout.name.split('p')[1]; j++) {
                         var subFrameView = new FrameView(frameData.frames[j].id);
                         var _pos2 = $frameUtils.getSubFramePosition(
                             frameData.layout.name, j, _pos1.width, _pos1.height);

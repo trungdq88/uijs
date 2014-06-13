@@ -47,22 +47,22 @@ $coreStartup.done(function () {
  target4 = $bodyFrame.childViews.Frame_4;
 
  slider1.setPosition(0, 0, target1.width, target1.height);
- slider1.setImages([a, b, c]);
+ slider1.setItems([a, b, c]);
  slider1.setEffects(['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown']);
  target1.addChildView(slider1);
 
  slider2.setPosition(0, 0, target2.width, target2.height);
- slider2.setImages([d, e, f]);
+ slider2.setItems([d, e, f]);
  slider2.setEffects(['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown']);
  target2.addChildView(slider2);
 
  slider3.setPosition(0, 0, target3.width, target3.height);
- slider3.setImages([g, h, i]);
+ slider3.setItems([g, h, i]);
  slider3.setEffects(['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown']);
  target3.addChildView(slider3);
 
  slider4.setPosition(0, 0, target4.width, target4.height);
- slider4.setImages([j, k, l]);
+ slider4.setItems([j, k, l]);
  slider4.setEffects(['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown']);
  target4.addChildView(slider4);
 

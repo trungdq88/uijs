@@ -19,7 +19,7 @@ if (typeof templates.frameslider == 'undefined') { templates.frameslider = {}; }
 
 
 templates.frameslider.slider = function(opt_data, opt_ignored) {
-  return '<div id="' + soy.$$escapeHtml(opt_data.id) + '" class="frame_slider"></div>';
+  return '<div id="' + soy.$$escapeHtml(opt_data.id) + '" class="frame_slider"><div id="' + soy.$$escapeHtml(opt_data.id) + '_loading" class="frame_slider_loading"></div><div id="' + soy.$$escapeHtml(opt_data.id) + '_content" class="frame_slider_content"></div></div>';
 };
 
 ;
@@ -31,7 +31,19 @@ if (typeof templates.imageview == 'undefined') { templates.imageview = {}; }
 
 
 templates.imageview.image = function(opt_data, opt_ignored) {
-  return '<img id="' + soy.$$escapeHtml(opt_data.id) + '" src="' + soy.$$escapeHtml(opt_data.imageSource) + '"/>';
+  return '<img id="' + soy.$$escapeHtml(opt_data.id) + '" src="' + soy.$$escapeHtml(opt_data.itemSource) + '"/>';
+};
+
+;
+// This file was automatically generated from video_view.soy.
+// Please don't edit this file by hand.
+
+if (typeof templates == 'undefined') { var templates = {}; }
+if (typeof templates.videoview == 'undefined') { templates.videoview = {}; }
+
+
+templates.videoview.video = function(opt_data, opt_ignored) {
+  return '<video id="' + soy.$$escapeHtml(opt_data.id) + '" loop><source id="' + soy.$$escapeHtml(opt_data.id) + '_source" src="' + soy.$$escapeHtml(opt_data.itemSource) + '"></video>';
 };
 
 
@@ -39,28 +51,76 @@ templates.imageview.image = function(opt_data, opt_ignored) {
 // Source: src/uijs/core/utils/Topic.js
 var Topic = Base.extend({
 
-  _subscribers: null,
+    _subscribers: null,
 
-  constructor: function() {
-    this._subscribers = [];
-  },
+    constructor: function () {
+        this._subscribers = [];
+    },
 
-  subscribe: function() {
-    var d = new Deferred();
-    this._subscribers.push(d);
-    return d;
-  },
+    subscribe: function () {
+        var d = new Deferred();
+        this._subscribers.push(d);
+        return d;
+    },
 
-  publish: function(data) {
-    var subs = this._subscribers;
-    this.clear();
-    for (var i = 0; i < subs.length; i++)
-      subs[i].resolve(data);
-  },
+    publish: function (data) {
+        var subs = this._subscribers;
+        this.clear();
+        for (var i = 0; i < subs.length; i++)
+            subs[i].resolve(data);
+    },
 
-  clear: function(){
-    this._subscribers = [];
-  }
+    clear: function () {
+        this._subscribers = [];
+    }
+});
+
+// Source: src/uijs/core/utils/DeferredPool.js
+/**
+ * Created by TrungDQ3 on 6/13/14.
+ */
+
+/**
+ * For apps that run on limited hardware device. This class keep the number of
+ * async request at a time is always smaller than 5 so we have more hardware
+ * resource to do what we want.
+ * @type {*}
+ */
+var DeferredPool = Base.extend({
+    MAX_REQUEST: 5,
+    count: 0,
+    freeSlot: new Topic(),
+    constructor: function() {
+
+    },
+    /**
+     *
+     * @param def Deferred
+     * @returns Deferred
+     */
+    pushDefer: function(def) {
+        var self = this;
+        if (this.count < this.MAX_REQUEST) {
+            this.count++;
+            console.log('Request pool: ' + this.count);
+            return def.done(function () {
+                self.count--;
+                console.log('Request pool: ' + self.count);
+                // Notify that we have free slot here
+                self.freeSlot.publish();
+            });
+        } else {
+            // TODO: When self.count--, try to sendRequest again.
+            console.log('Request pool is full! Waiting...');
+            var d = new Deferred();
+            this.freeSlot.subscribe().done(function() {
+                return self.pushDefer(def).done(function() {
+                    d.resolve.apply(d, arguments);
+                });
+            });
+            return d;
+        }
+    }
 });
 
 // Source: dist/js/include/coreInit.js
@@ -70,10 +130,10 @@ var Topic = Base.extend({
  */
 var $coreStartup = new Deferred();
 
-document.addEventListener('DOMContentLoaded', function(){
-  if (!DEBUG_MODE) {
-    $coreStartup.resolve();
-  }
+document.addEventListener('DOMContentLoaded', function () {
+    if (!DEBUG_MODE) {
+        $coreStartup.resolve();
+    }
 });
 
 // Source: src/uijs/app/main.js
@@ -82,74 +142,74 @@ document.addEventListener('DOMContentLoaded', function(){
  */
 
 $coreStartup.done(function () {
-  document.body.style.position = 'absolute';
-  document.body.style.width = APP_WIDTH + 'px';
-  document.body.style.height = APP_HEIGHT + 'px';
-  document.body.style.top = '0px';
-  document.body.style.left = '0px';
+    document.body.style.position = 'absolute';
+    document.body.style.width = APP_WIDTH + 'px';
+    document.body.style.height = APP_HEIGHT + 'px';
+    document.body.style.top = '0px';
+    document.body.style.left = '0px';
 
-  window.$bodyFrame = new FrameView('bodyFrame');
-  window.$bodyFrame.setPosition(0, 0, APP_WIDTH, APP_HEIGHT);
-  window.$bodyFrame.setBackgroundColor('#eee');
-  document.body.appendChild(window.$bodyFrame.node);
+    window.$bodyFrame = new FrameView('bodyFrame');
+    window.$bodyFrame.setPosition(0, 0, APP_WIDTH, APP_HEIGHT);
+    window.$bodyFrame.setBackgroundColor('#eee');
+    document.body.appendChild(window.$bodyFrame.node);
 });
 
 /*
-var main = function () {
-  var a = new ImageView('image1', 'http://www.byui.edu/images/agriculture-life-sciences/flower.jpg'),
-    b = new ImageView('image2', 'http://4.bp.blogspot.com/_89oxiIwvtak/STczHGkOYTI/AAAAAAAAFNg/lEcEBLdlToo/s400/' +
-      'Tropical+Plumeria+Flower.jpg'),
-    c = new ImageView('image3', 'http://1.bp.blogspot.com/-GVDcl1JUO8I/UYdQH9LFk5I/AAAAAAAAKUA/IWJ1vDPZdto/s640/' +
-      'flowers333.jpg'),
-    d = new ImageView('image4', 'http://2.bp.blogspot.com/-WuasmTMjMA4/TY0SS4TzIMI/AAAAAAAAFB4/6alyfOzWsqM/s640/' +
-      'flowers-wallpapers-love-blooms-roses-bunch-of-flowers.jpg'),
-    e = new ImageView('image5', 'http://www.boatshedmarket.com.au/image/data/flowers_img.jpg'),
-    f = new ImageView('image6', 'http://www.grandpalaceriga.com/images/catalog_full/89ac280cc25173a167f93d4f0e7c' +
-      '1e21.jpg'),
-    g = new ImageView('image7', 'http://4.bp.blogspot.com/_6D_evDvZgNA/SKpsT-ic4DI/AAAAAAAAAD8/fv4lqqI0PRY/s400/' +
-      'fragile-white-flowers.jpg'),
-    h = new ImageView('image8', 'http://www.graphix1.co.uk/wp-content/uploads/2011/08/08Flowers.jpg'),
-    i = new ImageView('image9', 'http://1.bp.blogspot.com/-WS3KVqdQn_Q/T-bU51hQJ3I/AAAAAAAAAFo/zwC4CKr7Xh0/s1600/' +
-      'the-desktop-hd-Flowers-wallpapers+(3).jpg'),
-    j = new ImageView('image10', 'http://blog.interflora.co.uk/wp-content/uploads/2012/07/Passion-Flower.jpg'),
-    k = new ImageView('image11', 'http://1.bp.blogspot.com/-JBzh6ow4OW0/UTM-iRlaiyI/AAAAAAAASec/stu52MBuWnM/s1600/' +
-      'y016-741067.jpg'),
-    l = new ImageView('image12', 'http://1.bp.blogspot.com/-DvLpL0NphyU/TpSFQ6WiUOI/AAAAAAAABbg/B-ykNMvWQvU/s1600/' +
-      'happy.jpg'),
-    slider1 = new FrameSlider('slider1'),
-    slider2 = new FrameSlider('slider2'),
-    slider3 = new FrameSlider('slider3'),
-    slider4 = new FrameSlider('slider4'),
-    target1 = $bodyFrame.childViews.Frame_1,
-    target2 = $bodyFrame.childViews.Frame_2,
-    target3 = $bodyFrame.childViews.Frame_3,
-    target4 = $bodyFrame.childViews.Frame_4;
+ var main = function () {
+ var a = new ImageView('image1', 'http://www.byui.edu/images/agriculture-life-sciences/flower.jpg'),
+ b = new ImageView('image2', 'http://4.bp.blogspot.com/_89oxiIwvtak/STczHGkOYTI/AAAAAAAAFNg/lEcEBLdlToo/s400/' +
+ 'Tropical+Plumeria+Flower.jpg'),
+ c = new ImageView('image3', 'http://1.bp.blogspot.com/-GVDcl1JUO8I/UYdQH9LFk5I/AAAAAAAAKUA/IWJ1vDPZdto/s640/' +
+ 'flowers333.jpg'),
+ d = new ImageView('image4', 'http://2.bp.blogspot.com/-WuasmTMjMA4/TY0SS4TzIMI/AAAAAAAAFB4/6alyfOzWsqM/s640/' +
+ 'flowers-wallpapers-love-blooms-roses-bunch-of-flowers.jpg'),
+ e = new ImageView('image5', 'http://www.boatshedmarket.com.au/image/data/flowers_img.jpg'),
+ f = new ImageView('image6', 'http://www.grandpalaceriga.com/images/catalog_full/89ac280cc25173a167f93d4f0e7c' +
+ '1e21.jpg'),
+ g = new ImageView('image7', 'http://4.bp.blogspot.com/_6D_evDvZgNA/SKpsT-ic4DI/AAAAAAAAAD8/fv4lqqI0PRY/s400/' +
+ 'fragile-white-flowers.jpg'),
+ h = new ImageView('image8', 'http://www.graphix1.co.uk/wp-content/uploads/2011/08/08Flowers.jpg'),
+ i = new ImageView('image9', 'http://1.bp.blogspot.com/-WS3KVqdQn_Q/T-bU51hQJ3I/AAAAAAAAAFo/zwC4CKr7Xh0/s1600/' +
+ 'the-desktop-hd-Flowers-wallpapers+(3).jpg'),
+ j = new ImageView('image10', 'http://blog.interflora.co.uk/wp-content/uploads/2012/07/Passion-Flower.jpg'),
+ k = new ImageView('image11', 'http://1.bp.blogspot.com/-JBzh6ow4OW0/UTM-iRlaiyI/AAAAAAAASec/stu52MBuWnM/s1600/' +
+ 'y016-741067.jpg'),
+ l = new ImageView('image12', 'http://1.bp.blogspot.com/-DvLpL0NphyU/TpSFQ6WiUOI/AAAAAAAABbg/B-ykNMvWQvU/s1600/' +
+ 'happy.jpg'),
+ slider1 = new FrameSlider('slider1'),
+ slider2 = new FrameSlider('slider2'),
+ slider3 = new FrameSlider('slider3'),
+ slider4 = new FrameSlider('slider4'),
+ target1 = $bodyFrame.childViews.Frame_1,
+ target2 = $bodyFrame.childViews.Frame_2,
+ target3 = $bodyFrame.childViews.Frame_3,
+ target4 = $bodyFrame.childViews.Frame_4;
 
-  slider1.setPosition(0, 0, target1.width, target1.height);
-  slider1.setImages([a, b, c]);
-  slider1.setEffects(['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown']);
-  target1.addChildView(slider1);
+ slider1.setPosition(0, 0, target1.width, target1.height);
+ slider1.setItems([a, b, c]);
+ slider1.setEffects(['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown']);
+ target1.addChildView(slider1);
 
-  slider2.setPosition(0, 0, target2.width, target2.height);
-  slider2.setImages([d, e, f]);
-  slider2.setEffects(['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown']);
-  target2.addChildView(slider2);
+ slider2.setPosition(0, 0, target2.width, target2.height);
+ slider2.setItems([d, e, f]);
+ slider2.setEffects(['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown']);
+ target2.addChildView(slider2);
 
-  slider3.setPosition(0, 0, target3.width, target3.height);
-  slider3.setImages([g, h, i]);
-  slider3.setEffects(['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown']);
-  target3.addChildView(slider3);
+ slider3.setPosition(0, 0, target3.width, target3.height);
+ slider3.setItems([g, h, i]);
+ slider3.setEffects(['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown']);
+ target3.addChildView(slider3);
 
-  slider4.setPosition(0, 0, target4.width, target4.height);
-  slider4.setImages([j, k, l]);
-  slider4.setEffects(['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown']);
-  target4.addChildView(slider4);
+ slider4.setPosition(0, 0, target4.width, target4.height);
+ slider4.setItems([j, k, l]);
+ slider4.setEffects(['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown']);
+ target4.addChildView(slider4);
 
-  $(target1.node).addClass('frame_slider');
-  $(target2.node).addClass('frame_slider');
-  $(target3.node).addClass('frame_slider');
-  $(target4.node).addClass('frame_slider');
-};
+ $(target1.node).addClass('frame_slider');
+ $(target2.node).addClass('frame_slider');
+ $(target3.node).addClass('frame_slider');
+ $(target4.node).addClass('frame_slider');
+ };
  */
 
 
@@ -164,48 +224,52 @@ var main = function () {
  * @type {*}
  */
 var BaseView = Base.extend({
-  id: null,
-  node: null,
-  childViews: {},
-  constructor: function (id) {
-    this.id = id || '';
-    // Add event listener
-  },
-  setNode: function (html) {
-    var dummyEl = document.createElement('div');
-    dummyEl.innerHTML = html;
-    if (dummyEl.childNodes.length > 1) {
-      console.log('Cannot set node: the template contains multiple root node');
-    } else {
-      this.node = dummyEl.childNodes[0];
-      this.node.style.position = 'absolute';
+    id: null,
+    node: null,
+    childViews: {},
+    constructor: function (id) {
+        this.id = id || '';
+        // Add event listener
+    },
+    setNode: function (html) {
+        var dummyEl = document.createElement('div');
+        dummyEl.innerHTML = html;
+        if (dummyEl.childNodes.length > 1) {
+            console.log('Cannot set node: the template contains multiple root node');
+        } else {
+            this.node = dummyEl.childNodes[0];
+            this.node.style.position = 'absolute';
+        }
+    },
+    setPosition: function (left, top, width, height) {
+        this.left = left;
+        this.top = top;
+        this.width = width;
+        this.height = height;
+        this.node.style.left = left ? left + 'px' : '';
+        this.node.style.top = top ? top + 'px' : '';
+        this.node.style.width = width ? width + 'px' : '';
+        this.node.style.height = height ? height + 'px' : '';
+    },
+    setBackgroundColor: function (color) {
+        this.node.style.backgroundColor = color;
+    },
+    addChildView: function (view, altNode) {
+        if (view && view.id && !this.childViews[view.id]) {
+            view.parentView = this;
+            this.childViews[view.id] = view;
+            if (altNode) {
+                altNode.appendChild(view.node);
+            } else {
+                this.node.appendChild(view.node);
+            }
+        } else {
+            console.log('View ID (' + view.id + ') is not defined or already exist in parent View (' + this.id + ')');
+        }
+    },
+    getParentView: function () {
+        return this.parentView;
     }
-  },
-  setPosition: function (left, top, width, height) {
-    this.left = left;
-    this.top = top;
-    this.width = width;
-    this.height = height;
-    this.node.style.left = left ? left + 'px' : '';
-    this.node.style.top = top ? top + 'px' : '';
-    this.node.style.width = width ? width + 'px' : '';
-    this.node.style.height = height ? height + 'px' : '';
-  },
-  setBackgroundColor: function (color) {
-    this.node.style.backgroundColor = color;
-  },
-  addChildView: function (view) {
-    if (view && view.id && !this.childViews[view.id]) {
-      view.parentView = this;
-      this.childViews[view.id] = view;
-      this.node.appendChild(view.node);
-    } else {
-      console.log('View ID (' + view.id + ') is not defined or already exist in parent View (' + this.id + ')');
-    }
-  },
-  getParentView: function () {
-    return this.parentView;
-  }
 });
 
 // Source: src/uijs/core/components/ui-frameview/FrameView.js
@@ -213,11 +277,11 @@ var BaseView = Base.extend({
  * Created by TrungDQ3 on 6/9/14.
  */
 var FrameView = BaseView.extend({
-  constructor: function (id) {
-    this.base('FrameView_' + id);
-    this.childViews = {};
-    this.setNode(templates.frame.frame(this));
-  }
+    constructor: function (id) {
+        this.base('FrameView_' + id);
+        this.childViews = {};
+        this.setNode(templates.frame.frame(this));
+    }
 });
 
 // Source: src/uijs/core/components/ui-frameslider/FrameAnimation.js
@@ -226,69 +290,69 @@ var FrameView = BaseView.extend({
  */
 
 var $frameAnimation = {
-  swipeLeft: function (node, revert) {
-    if (!revert) {
-      node.style.webkitTransform = 'translate3d(-100%, 0, 0)';
-    } else {
-      node.style.webkitTransform = 'translate3d(0, 0, 0)';
+    swipeLeft: function (node, revert) {
+        if (!revert) {
+            node.style.webkitTransform = 'translate3d(-100%, 0, 0)';
+        } else {
+            node.style.webkitTransform = 'translate3d(0, 0, 0)';
+        }
+    },
+    swipeRight: function (node, revert) {
+        if (!revert) {
+            node.style.webkitTransform = 'translate3d(100%, 0, 0)';
+        } else {
+            node.style.webkitTransform = 'translate3d(0, 0, 0)';
+        }
+    },
+    swipeUp: function (node, revert) {
+        if (!revert) {
+            node.style.webkitTransform = 'translate3d(0, -100%, 0)';
+        } else {
+            node.style.webkitTransform = 'translate3d(0, 0, 0)';
+        }
+    },
+    swipeDown: function (node, revert) {
+        if (!revert) {
+            node.style.webkitTransform = 'translate3d(0, 100%, 0)';
+        } else {
+            node.style.webkitTransform = 'translate3d(0, 0, 0)';
+        }
+    },
+    zoomUpDown: function (node, revert) {
+        if (!revert) {
+            node.style.webkitTransform = 'scale(0)';
+        } else {
+            node.style.webkitTransform = 'scale(1)';
+        }
+    },
+    flipRight: function (node, revert) {
+        if (!revert) {
+            node.style.webkitTransform = 'perspective(700px) rotateY(90deg)';
+        } else {
+            node.style.webkitTransform = 'perspective(700px) rotateY(0deg)';
+        }
+    },
+    flipLeft: function (node, revert) {
+        if (!revert) {
+            node.style.webkitTransform = 'perspective(700px) rotateY(-90deg)';
+        } else {
+            node.style.webkitTransform = 'perspective(700px) rotateY(0deg)';
+        }
+    },
+    flipUp: function (node, revert) {
+        if (!revert) {
+            node.style.webkitTransform = 'perspective(700px) rotateX(90deg)';
+        } else {
+            node.style.webkitTransform = 'perspective(700px) rotateX(0deg)';
+        }
+    },
+    flipDown: function (node, revert) {
+        if (!revert) {
+            node.style.webkitTransform = 'perspective(700px) rotateX(-90deg)';
+        } else {
+            node.style.webkitTransform = 'perspective(700px) rotateX(0deg)';
+        }
     }
-  },
-  swipeRight: function (node, revert) {
-    if (!revert) {
-      node.style.webkitTransform = 'translate3d(100%, 0, 0)';
-    } else {
-      node.style.webkitTransform = 'translate3d(0, 0, 0)';
-    }
-  },
-  swipeUp: function (node, revert) {
-    if (!revert) {
-      node.style.webkitTransform = 'translate3d(0, -100%, 0)';
-    } else {
-      node.style.webkitTransform = 'translate3d(0, 0, 0)';
-    }
-  },
-  swipeDown: function (node, revert) {
-    if (!revert) {
-      node.style.webkitTransform = 'translate3d(0, 100%, 0)';
-    } else {
-      node.style.webkitTransform = 'translate3d(0, 0, 0)';
-    }
-  },
-  zoomUpDown: function (node, revert) {
-    if (!revert) {
-      node.style.webkitTransform = 'scale(0)';
-    } else {
-      node.style.webkitTransform = 'scale(1)';
-    }
-  },
-  flipRight: function (node, revert) {
-    if (!revert) {
-      node.style.webkitTransform = 'perspective(700px) rotateY(90deg)';
-    } else {
-      node.style.webkitTransform = 'perspective(700px) rotateY(0deg)';
-    }
-  },
-  flipLeft: function (node, revert) {
-    if (!revert) {
-      node.style.webkitTransform = 'perspective(700px) rotateY(-90deg)';
-    } else {
-      node.style.webkitTransform = 'perspective(700px) rotateY(0deg)';
-    }
-  },
-  flipUp: function (node, revert) {
-    if (!revert) {
-      node.style.webkitTransform = 'perspective(700px) rotateX(90deg)';
-    } else {
-      node.style.webkitTransform = 'perspective(700px) rotateX(0deg)';
-    }
-  },
-  flipDown: function (node, revert) {
-    if (!revert) {
-      node.style.webkitTransform = 'perspective(700px) rotateX(-90deg)';
-    } else {
-      node.style.webkitTransform = 'perspective(700px) rotateX(0deg)';
-    }
-  }
 };
 
 // Source: src/uijs/core/components/ui-frameslider/FrameSlider.js
@@ -297,106 +361,166 @@ var $frameAnimation = {
  */
 
 var FrameSlider = BaseView.extend({
-  currentIndex: 0,
-  timeOut: 3,
-  duration: 1,
-  images: [],
-  effects: [],
-  constructor: function (id, images, effects) {
-    this.base('FrameSlider_' + id);
-    this.childViews = {};
-    this.setNode(templates.frameslider.slider(this));
-    if (images) {
-      this.setImages(images);
-    }
-    if (effects) {
-      this.setEffects(effects);
-    }
-  },
-  setImages: function (images) {
-    var self = this,
-      defs = [];
-    this.images = images;
-    this.hide();
-    for (var i = 0; i < images.length; i++) {
-      var image = images[i];
-      image.setPosition(0, 0, this.width, this.height);
-      image.node.style.webkitTransform = 'translate3d(0px, 0px, 0px)';
-      image.node.style.webkitTransition = '-webkit-transform ' + this.duration + 's';
-      defs.push(image.imageReady);
-    }
-    Deferred.when(Deferred, defs).done(function() {
-      for (var i = 1; i < arguments.length; i++) {
-        self.addChildView(arguments[i][0]);
-      }
-      self.show();
-      self.startSlideShow();
-    });
-  },
-  setEffects: function (effects) {
-    this.effects = effects;
-  },
-  hide: function () {
-    this.node.style.webkitTransition = 'opacity 0.5s';
-    this.node.style.opacity = 0;
-  },
-  show: function () {
-    this.node.style.opacity = 0.99;
-  },
-  startSlideShow: function () {
-    var self = this;
-    this.currentIndex = this.images.length - 1;
-    for (var i = 0; i < this.images.length; i++) {
-      this.images[i].node.style.zIndex = i + 1;
-    }
-    var moveLayers = function(index) {
-      self.images[index].node.style.zIndex = 1;
-      for (var i = 0; i < self.images.length; i++) {
-        if (i != index) {
-          self.images[i].node.style.zIndex = +self.images[i].node.style.zIndex + 1;
+    currentIndex: 0,
+    timeOut: 3,
+    duration: 1,
+    items: [],
+    effects: [],
+    contentNode: null,
+    loadingNode: null,
+    constructor: function (id, items, effects) {
+        this.base('FrameSlider_' + id);
+        this.childViews = {};
+        this.setNode(templates.frameslider.slider(this));
+        this.contentNode = $(this.node).find('#' + this.id + '_content')[0];
+        this.loadingNode = $(this.node).find('#' + this.id + '_loading')[0];
+        this.loadingNode.style.webkitTransform = 'scaleX(0)';
+        if (items) {
+            this.setItems(items);
         }
-      }
-    };
-    var doTransition = function() {
-      if (self.currentIndex < 0) {
-        self.currentIndex = self.images.length - 1;
-      }
-      var anim = $frameAnimation[self.getRandomEffect()];
+        if (effects) {
+            this.setEffects(effects);
+        }
+    },
+    setPosition: function (left, top, width, height) {
+        this.base(left, top, width, height);
+        this.loadingNode.style.width = (this.width*0.8) + 'px';
+        this.loadingNode.style.left = (this.width*0.1) + 'px';
+        this.loadingNode.style.top = (this.height / 2 - 1) + 'px';
+    },
+    setItems: function (items) {
+        var self = this,
+            loaded = 0;
+        this.items = items;
+        this.hide();
 
-      if (anim) {
-        anim(self.images[self.currentIndex].node);
+        var updateProcess = function () {
+            loaded++;
+            if (loaded === items.length) {
+                setTimeout(function () {
+                    for (var i = 0; i < items.length; i++) {
+                        self.addChildView(items[i], self.contentNode);
+                        if (item instanceof VideoView) {
+                            items[i].play();
+                        }
+                    }
+                    self.show();
+                    if (items.length > 1) {
+                        self.startSlideShow();
+                    }
+                    self.loadingNode.parentNode.removeChild(self.loadingNode);
+                    self.node.style.background = '';
+                }, 1000);
+            }
+            self.updateProcessbar(loaded / items.length);
+        };
+        for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            item.setPosition(0, 0, this.width, this.height);
+            item.node.style.webkitTransform = 'translate3d(0px, 0px, 0px)';
+            item.itemReady.done(updateProcess);
+        }
+    },
+    updateProcessbar: function (percent) {
+        this.loadingNode.style.webkitTransform = 'scaleX(' + percent + ')';
+    },
+    setEffects: function (effects) {
+        this.effects = effects;
+    },
+    hide: function () {
+        this.contentNode.style.opacity = 0;
+    },
+    show: function () {
+        this.contentNode.style.opacity = 0.99;
+    },
+    startSlideShow: function () {
+        var self = this;
+        this.currentIndex = this.items.length - 1;
+        for (var i = 0; i < this.items.length; i++) {
+            this.items[i].node.style.zIndex = i + 1;
+        }
+        var moveLayers = function (index) {
+            self.items[index].node.style.zIndex = 1;
+            for (var i = 0; i < self.items.length; i++) {
+                if (i != index) {
+                    self.items[i].node.style.zIndex = +self.items[i].node.style.zIndex + 1;
+                }
+            }
+        };
+        var doTransition = function () {
+            if (self.currentIndex < 0) {
+                self.currentIndex = self.items.length - 1;
+            }
+            var anim = $frameAnimation[self.getRandomEffect()];
 
-        self.currentIndex--;
+            if (anim) {
+                self.items[self.currentIndex].enableTransition(self.duration);
+                anim(self.items[self.currentIndex].node);
 
-        setTimeout(function() {
-          var targetIndex = self.currentIndex + 1;
-          anim(self.images[targetIndex].node, true);
-          moveLayers(targetIndex);
-        }, self.duration * 1000);
-      } else {
-        moveLayers(self.currentIndex--);
-      }
-      setTimeout(doTransition, self.timeOut * 1000);
-    };
-    setTimeout(doTransition, this.timeOut * 1000);
-  },
-  /**
-   * Set transition timeout in second
-   * @param n
-   */
-  setTimeout: function (n) {
-    this.timeOut = n;
-  },
-  setDuration: function (n) {
-    this.duration = n;
-    for (var i = 0; i < this.images.length; i++) {
-      var image = this.images[i];
-      image.node.style.webkitTransition = '-webkit-transform ' + this.duration + 's';
+                self.currentIndex--;
+
+                setTimeout(function () {
+                    var targetIndex = self.currentIndex + 1;
+                    self.items[targetIndex].disableTransition();
+                    anim(self.items[targetIndex].node, true);
+                    moveLayers(targetIndex);
+                }, self.duration * 1000);
+            } else {
+                moveLayers(self.currentIndex--);
+            }
+            setTimeout(doTransition, self.timeOut * 1000);
+        };
+        setTimeout(doTransition, this.timeOut * 1000);
+    },
+    /**
+     * Set transition timeout in second
+     * @param n
+     */
+    setTimeout: function (n) {
+        this.timeOut = n;
+    },
+    setDuration: function (n) {
+        this.duration = n;
+        for (var i = 0; i < this.items.length; i++) {
+            var item = this.items[i];
+            item.node.style.webkitTransition = '-webkit-transform ' + this.duration + 's';
+        }
+    },
+    getRandomEffect: function () {
+        return this.effects[Math.floor(Math.random() * this.effects.length)] || '';
     }
-  },
-  getRandomEffect: function () {
-    return this.effects[Math.floor(Math.random()*this.effects.length)] || '';
-  }
+});
+
+// Source: src/uijs/core/components/ui-itemview/ItemView.js
+/**
+ * Created by TrungDQ3 on 6/13/14.
+ */
+
+var ItemView = BaseView.extend({
+    itemSource: '',
+    itemReady: null,
+    constructor: function (id, src) {
+        this.base('ItemView_' + id);
+
+        if (src) {
+            this.itemSource = src;
+        }
+
+        this.prepareItemNode();
+    },
+    prepareItemNode: function () {
+        // Abstract method
+    },
+    setItemSource: function (src) {
+        this.itemSource = src;
+        return this.itemReady;
+    },
+    enableTransition: function (duration) {
+        this.node.style.webkitTransition = '-webkit-transform ' + duration + 's';
+    },
+    disableTransition: function () {
+        this.node.style.webkitTransition = '';
+    }
 });
 
 // Source: src/uijs/core/components/ui-imageview/ImageView.js
@@ -404,28 +528,51 @@ var FrameSlider = BaseView.extend({
  * Created by TrungDQ3 on 6/10/14.
  */
 
-var ImageView = BaseView.extend({
-  imageSource: '',
-  imageReady: null,
-  constructor: function (id, src) {
-    var self = this;
-    this.base('ImageView_' + id);
+var ImageView = ItemView.extend({
+    constructor: function (id, src) {
+        this.base('ImageView_' + id, src);
+    },
+    prepareItemNode: function () {
+        var self = this;
+        this.setNode(templates.imageview.image(this));
 
-    if (src) {
-      this.imageSource = src;
+        this.itemReady = new Deferred();
+        this.node.addEventListener('load', function (e) {
+            self.itemReady.resolve(self, e);
+        });
+    },
+    setItemSource: function (src) {
+        this.node.src = src;
+        return this.base(src);
     }
+});
 
-    this.setNode(templates.imageview.image(this));
+// Source: src/uijs/core/components/ui-videoview/VideoView.js
+/**
+ * Created by TrungDQ3 on 6/13/14.
+ */
 
-    this.imageReady = new Deferred();
-    this.node.onload = function(e) {
-      self.imageReady.resolve(self, e);
-    };
-  },
-  setImageSource: function(src) {
-    this.imageSource = src;
-    this.node.src = src;
-  }
+var VideoView = ItemView.extend({
+    constructor: function (id, src) {
+        this.base('VideoView_' + id, src);
+    },
+    prepareItemNode: function () {
+        var self = this;
+        this.setNode(templates.videoview.video(this));
+
+        this.itemReady = new Deferred();
+        this.node.addEventListener('canplay', function (e) {
+            self.itemReady.resolve(self, e);
+        });
+    },
+    setItemSource: function (src) {
+        this.node.src = src;
+        this.node.load();
+        return this.base(src);
+    },
+    play: function () {
+        this.node.play();
+    }
 });
 
 // Source: dist/js/include/appLibs.js
@@ -438,46 +585,163 @@ var ImageView = BaseView.extend({
  */
 
 // Device config
-var DEVICE_ID = "311TRUNGDQ3-W7";
+var DEVICE_ID = "311TRUNGDQ3-W7-2";
 
 // App config
 var APP_WIDTH = 1280;
 var APP_HEIGHT = 720;
 var FRAME_GAP = 3;
+var MAX_IMAGE_REQUESTS = 5;
+
+// Source: src/uijs/app/modules/backend_service/BackendService.js
+/**
+ * Created by TrungDQ3 on 6/9/14.
+ */
+
+var BackendService = Topic.extend({
+    BACKEND_SOCKET_URL: 'ws://10.88.66.251:8080/tsb-shareboard-api/websocket',
+    BACKEND_API_URL: 'http://10.88.66.251:8080/tsb-shareboard-api/check/',
+    socket: null,
+    _isListening: false,
+    defDisconnect: new Deferred(),
+    getTemplate: function (templateId) {
+        var d = new Deferred();
+        /*
+         $.getJSON(this.BACKEND_API_URL + 'template?id=' + templateId, function (data) {
+         d.resolve(data);
+         });
+         */
+        d.resolve(JSON.parse('{"id":1,"layout":{"id":7,"name":"hp4"},"account":null,"name":"template1","startTime":1402531200,"endTime":1405123200,"frames":[{"id":11,"name":"frame11","layout":{"id":7,"name":"hp4"},"ref":3,"items":[],"frames":[{"id":12,"name":"frame12","layout":null,"ref":3,"items":[{"id":27,"type":"image","url":"http://cdn.twentytwowords.com/wp-content/uploads/Hot-Lips-Flower-01-634x396.jpg"},{"id":25,"type":"image","url":"http://3.bp.blogspot.com/-kEDW4tNSmpA/UYnb_TbNiqI/AAAAAAAAKlc/MuZ3D0k6xRs/s400/wallpapers-of-Rose-Flower456.jpg"},{"id":26,"type":"image","url":"http://cimages.proflowers.com/is/image/ProvideCommerce/PF_13_T220_MDAY_VA0607_W1_SQ"}],"frames":[],"effects":[{"id":1,"name":"swipeLeft"},{"id":3,"name":"swipeUp"},{"id":4,"name":"swipeDown"},{"id":2,"name":"swipeRight"}]},{"id":13,"name":"frame13","layout":null,"ref":3,"items":[{"id":28,"type":"image","url":"http://www.whats-your-sign.com/images/ChineseFlowerMeanings.jpg"},{"id":29,"type":"image","url":"http://4.bp.blogspot.com/-7YF-17Q2s8c/Uh-WX2tVrHI/AAAAAAAAAoc/lwRlay4pL8s/s640/light-blue-flowers-wallpapers-hd.jpg"},{"id":30,"type":"image","url":"http://1.bp.blogspot.com/-l-ePa0ejM18/UAjHJz63NZI/AAAAAAAAEdU/XErwfKE6JPk/s1600/bird-of-paradise-flower-1.jpg"}],"frames":[],"effects":[{"id":4,"name":"swipeDown"},{"id":1,"name":"swipeLeft"},{"id":2,"name":"swipeRight"},{"id":3,"name":"swipeUp"}]},{"id":14,"name":"frame14","layout":null,"ref":3,"items":[{"id":33,"type":"image","url":"http://coverslike.com/thumbs/red_flower-t1.jpg"},{"id":32,"type":"image","url":"http://www.designboom.com/weblog/images/images_2/lara/818_images/robert_buelteman/electrocuted_flowers05.jpg"},{"id":31,"type":"image","url":"http://2.bp.blogspot.com/_mvHl0jIiX-E/S2j1d3skY_I/AAAAAAAAE9Q/ni4g5VuGmk8/s640/blue-violet-flower07.jpg"}],"frames":[],"effects":[{"id":4,"name":"swipeDown"},{"id":1,"name":"swipeLeft"},{"id":3,"name":"swipeUp"},{"id":2,"name":"swipeRight"}]},{"id":15,"name":"frame15","layout":null,"ref":3,"items":[{"id":35,"type":"image","url":"http://2.bp.blogspot.com/-2k0vUtH2xZ8/US8aB1Fz1DI/AAAAAAAAHGI/XoxwF_s6Dhs/s400/flower_in_blue_sky-normal5.4.jpg"},{"id":34,"type":"image","url":"http://2.bp.blogspot.com/-EM-G_YNgKJ8/TV38pYHcG2I/AAAAAAAAJCU/GCjizjfOWMg/s400/pink+rose+wallpapers+%252810%2529.jpg"},{"id":36,"type":"image","url":"http://4.bp.blogspot.com/-NAVTPHuKF6s/UayIsar0MqI/AAAAAAAAAQg/XhVidOZshqI/s1600/purple-flower-87a.jpg"}],"frames":[],"effects":[{"id":2,"name":"swipeRight"},{"id":4,"name":"swipeDown"},{"id":1,"name":"swipeLeft"},{"id":3,"name":"swipeUp"}]}],"effects":[{"id":2,"name":"swipeRight"},{"id":1,"name":"swipeLeft"},{"id":3,"name":"swipeUp"},{"id":4,"name":"swipeDown"}]},{"id":2,"name":"frame2","layout":{"id":6,"name":"hp3"},"ref":3,"items":[],"frames":[{"id":4,"name":"frame4","layout":null,"ref":3,"items":[{"id":7,"type":"image","url":"http://www.graphix1.co.uk/wp-content/uploads/2011/08/08Flowers.jpg"},{"id":8,"type":"image","url":"http://1.bp.blogspot.com/-WS3KVqdQn_Q/T-bU51hQJ3I/AAAAAAAAAFo/zwC4CKr7Xh0/s1600/the-desktop-hd-Flowers-wallpapers+(3).jpg"},{"id":9,"type":"image","url":"http://blog.interflora.co.uk/wp-content/uploads/2012/07/Passion-Flower.jpg"}],"frames":[],"effects":[{"id":1,"name":"swipeLeft"},{"id":2,"name":"swipeRight"},{"id":4,"name":"swipeDown"},{"id":3,"name":"swipeUp"}]},{"id":3,"name":"frame3","layout":null,"ref":3,"items":[{"id":4,"type":"image","url":"http://www.boatshedmarket.com.au/image/data/flowers_img.jpg"},{"id":6,"type":"image","url":"http://4.bp.blogspot.com/_6D_evDvZgNA/SKpsT-ic4DI/AAAAAAAAAD8/fv4lqqI0PRY/s400/fragile-white-flowers.jpg"},{"id":5,"type":"image","url":"http://www.grandpalaceriga.com/images/catalog_full/89ac280cc25173a167f93d4f0e7c1e21.jpg"}],"frames":[],"effects":[{"id":1,"name":"swipeLeft"},{"id":4,"name":"swipeDown"},{"id":2,"name":"swipeRight"},{"id":3,"name":"swipeUp"}]},{"id":5,"name":"frame5","layout":null,"ref":3,"items":[{"id":10,"type":"image","url":"http://1.bp.blogspot.com/-JBzh6ow4OW0/UTM-iRlaiyI/AAAAAAAASec/stu52MBuWnM/s1600/y016-741067.jpg"},{"id":12,"type":"image","url":"http://images2.layoutsparks.com/1/179204/no-idea-t5-flowers.jpg"},{"id":11,"type":"image","url":"http://1.bp.blogspot.com/-DvLpL0NphyU/TpSFQ6WiUOI/AAAAAAAABbg/B-ykNMvWQvU/s1600/happy.jpg"}],"frames":[],"effects":[{"id":3,"name":"swipeUp"},{"id":2,"name":"swipeRight"},{"id":4,"name":"swipeDown"},{"id":1,"name":"swipeLeft"}]}],"effects":[{"id":2,"name":"swipeRight"},{"id":3,"name":"swipeUp"},{"id":4,"name":"swipeDown"},{"id":1,"name":"swipeLeft"}]},{"id":1,"name":"frame1","layout":null,"ref":3,"items":[{"id":1,"type":"video","url":"http://10.88.66.166:8088/shareboard/video.mp4"}],"frames":[],"effects":[{"id":4,"name":"swipeDown"},{"id":2,"name":"swipeRight"},{"id":1,"name":"swipeLeft"},{"id":3,"name":"swipeUp"}]},{"id":6,"name":"frame6","layout":{"id":7,"name":"hp4"},"ref":3,"items":[],"frames":[{"id":9,"name":"frame9","layout":null,"ref":3,"items":[{"id":20,"type":"image","url":"http://cdn.blogs.sheknows.com/gardening.sheknows.com/2011/02/lotus-flower.jpg"},{"id":21,"type":"image","url":"http://mw2.google.com/mw-panoramio/photos/medium/96447714.jpg"},{"id":19,"type":"image","url":"http://4.bp.blogspot.com/-ik3E8PBBf70/TwaZ9PMNbrI/AAAAAAAAAG0/kNrGnEbZ-WY/s640/flowers2.jpg"}],"frames":[],"effects":[{"id":4,"name":"swipeDown"},{"id":1,"name":"swipeLeft"},{"id":2,"name":"swipeRight"},{"id":3,"name":"swipeUp"}]},{"id":8,"name":"frame8","layout":null,"ref":3,"items":[{"id":17,"type":"image","url":"http://4.bp.blogspot.com/-NAVTPHuKF6s/UayIsar0MqI/AAAAAAAAAQg/XhVidOZshqI/s1600/purple-flower-87a.jpg"},{"id":18,"type":"image","url":"http://2.bp.blogspot.com/-e9Obk_RFH4I/UYdQPpxggOI/AAAAAAAAKUY/KBVhQxwnB4c/s640/flowers44.jpg"},{"id":16,"type":"image","url":"http://1.bp.blogspot.com/--VqUcuRqS8Q/TYwVmOKir8I/AAAAAAAAAJQ/ZSK5ygALMeU/s1600/red-flowers.jpg"}],"frames":[],"effects":[{"id":3,"name":"swipeUp"},{"id":2,"name":"swipeRight"},{"id":4,"name":"swipeDown"},{"id":1,"name":"swipeLeft"}]},{"id":10,"name":"frame10","layout":null,"ref":3,"items":[{"id":24,"type":"image","url":"http://vnfriend.files.wordpress.com/2010/11/flower-4.jpg"},{"id":23,"type":"image","url":"http://flowerinfo.org/wp-content/gallery/lupine-flowers/lupine-flowers-5.jpg"},{"id":22,"type":"image","url":"http://3.bp.blogspot.com/-ui6lvZa8CGA/TlnS2Hv2DkI/AAAAAAAACyM/E34Dab7dWfs/s685/Lily+flower+wallpaper4.jpg"}],"frames":[],"effects":[{"id":3,"name":"swipeUp"},{"id":1,"name":"swipeLeft"},{"id":4,"name":"swipeDown"},{"id":2,"name":"swipeRight"}]},{"id":7,"name":"frame7","layout":null,"ref":3,"items":[{"id":15,"type":"image","url":"http://4.bp.blogspot.com/-QrlW8v6xQos/UYnb7bMSNJI/AAAAAAAAKlI/XcqrCoJsZ68/s1600/vibrant-flowers-248131_1024_768rrr.jpg"},{"id":14,"type":"image","url":"http://www.bhg.com/videos/hosting/media/bhg/1620905/59977667/add-fragrant-flowers-to-your-garden.jpg"},{"id":13,"type":"image","url":"http://3.bp.blogspot.com/-ONEZIRjcjXE/Uh-WjyE3aSI/AAAAAAAAAos/dLqEAVDfggE/s640/blue-flower-wallpaper-.jpg"}],"frames":[],"effects":[{"id":2,"name":"swipeRight"},{"id":4,"name":"swipeDown"},{"id":3,"name":"swipeUp"},{"id":1,"name":"swipeLeft"}]}],"effects":[{"id":3,"name":"swipeUp"},{"id":2,"name":"swipeRight"},{"id":4,"name":"swipeDown"},{"id":1,"name":"swipeLeft"}]}]}'));
+        return d;
+    },
+    connectBackend: function () {
+        var self = this;
+        this.socket = new SocketClient();
+        this.socket.defClose.done(function () {
+            self.defDisconnect.resolve();
+        });
+        return this.socket.connect(this.BACKEND_SOCKET_URL).done(function () {
+            self._isListening = true;
+            self.startSubscribe();
+        });
+    },
+    disconnectBackend: function () {
+        this._isListening = false;
+        this.socket.close();
+    },
+    startSubscribe: function () {
+        var self = this;
+        this.socket.subscribe().done(function (msgEvent) {
+            self.publish(JSON.parse(msgEvent.data));
+            if (self._isListening) {
+                self.startSubscribe();
+            }
+        });
+    },
+    sendMessage: function (method, data) {
+        this.socket.send(JSON.stringify({
+            method: method,
+            data: data
+        }));
+    }
+});
+
+// Source: src/uijs/app/modules/backend_service/init.js
+/**
+ * Created by TrungDQ3 on 6/9/14.
+ */
+$coreStartup.done(function () {
+    window.$backendService = new BackendService();
+});
+
+// Source: src/uijs/app/modules/device_auth/DeviceAuth.js
+/**
+ * Created by TrungDQ3 on 6/12/14.
+ */
+var DeviceAuth = Base.extend({
+    authenticated: new Deferred(),
+    constructor: function () {
+        var self = this;
+        $backendService.connectBackend().done(function () {
+            console.log('Connect to backend success');
+            self.startSubscribe();
+        });
+        this.authenticated.done(function (data) {
+            console.log('Authenticated success: ' + data.message);
+        }).fail(function (msg) {
+            console.log('Authenticated failed: ' + msg);
+        });
+    },
+    startSubscribe: function () {
+        var self = this;
+        $backendService.subscribe().done(function (data) {
+            self.processData(data);
+            self.startSubscribe();
+        });
+    },
+    processData: function (data) {
+        switch (data.method) {
+            case $frameEnum.method.require_device_authenticate:
+                this.authenticateDevice();
+                break;
+            case $frameEnum.method.device_authenticate:
+                if (data.data.code == "002") {
+                    this.authenticated.resolve(data.data);
+                } else if (data.data.code == "001") {
+                    this.authenticated.reject(data.data.message);
+                }
+                break;
+            default:
+        }
+    },
+    authenticateDevice: function () {
+        $backendService.sendMessage($frameEnum.method.device_authenticate, {
+            deviceId: DEVICE_ID
+        });
+    }
+});
+
+// Source: src/uijs/app/modules/device_auth/init.js
+/**
+ * Created by TrungDQ3 on 6/9/14.
+ */
+$coreStartup.done(function () {
+    window.$deviceAuth = new DeviceAuth();
+});
 
 // Source: src/uijs/app/modules/frame_manager/FrameEnums.js
 /**
  * Created by TrungDQ3 on 6/9/14.
  */
 var $frameEnum = {
-  layout: {
-    vp1: 'vp1',
-    vp2: 'vp2',
-    vp3: 'vp3',
-    hp1: 'hp1',
-    hp2: 'hp2',
-    hp3: 'hp3',
-    hp4: 'hp4'
-  },
-  item: {
-    image: 'image',
-    video: 'video'
-  },
-  effect: {
-    swipeLeft: 'swipeLeft',
-    swipeRight: 'swipeRight',
-    swipeUp: 'swipeUp',
-    swipeDown: 'swipeUp',
-    zoomUpDown: 'zoomUpDown',
-    flipRight: 'flipRight',
-    flipLeft: 'flipLeft',
-    flipUp: 'flipUp',
-    flipDown: 'flipDown'
-  },
-  method: {
-    require_device_authenticate: 'require_device_authenticate',
-    device_authenticate: 'device_authenticate'
-  }
+    layout: {
+        vp1: 'vp1',
+        vp2: 'vp2',
+        vp3: 'vp3',
+        hp1: 'hp1',
+        hp2: 'hp2',
+        hp3: 'hp3',
+        hp4: 'hp4'
+    },
+    item: {
+        image: 'image',
+        video: 'video'
+    },
+    effect: {
+        swipeLeft: 'swipeLeft',
+        swipeRight: 'swipeRight',
+        swipeUp: 'swipeUp',
+        swipeDown: 'swipeUp',
+        zoomUpDown: 'zoomUpDown',
+        flipRight: 'flipRight',
+        flipLeft: 'flipLeft',
+        flipUp: 'flipUp',
+        flipDown: 'flipDown'
+    },
+    method: {
+        require_device_authenticate: 'require_device_authenticate',
+        device_authenticate: 'device_authenticate'
+    }
 };
 
 // Source: src/uijs/app/modules/frame_manager/FrameUtils.js
@@ -486,167 +750,177 @@ var $frameEnum = {
  */
 
 var $frameUtils = {
-  getSubFramePosition: function(layout, index, width, height){
-    switch (layout) {
-      case $frameEnum.layout.vp2:
-        return {
-          left: 0,
-          top: (FRAME_GAP + height) * index / 2,
-          width: width,
-          height: height/2 - FRAME_GAP/2
-        };
-      case $frameEnum.layout.vp3:
-        return {
-          left: 0,
-          top: (height / 3 + FRAME_GAP / 3) * index ,
-          width: width,
-          height: (height - FRAME_GAP * 3 - FRAME_GAP) / 3 + FRAME_GAP/1.5
-        };
-      case $frameEnum.layout.hp1:
-        return {
-          left: FRAME_GAP,
-          top: FRAME_GAP + index * ((height - FRAME_GAP * 3)),
-          width: width - FRAME_GAP * 2,
-          height: (height - FRAME_GAP * 2)
-        };
-      case $frameEnum.layout.hp2:
-        return {
-          left:  (FRAME_GAP + width) * index / 2,
-          top: 0,
-          width: (width - FRAME_GAP) / 2 ,
-          height: height
-        };
-      case $frameEnum.layout.hp3:
-        if (index == 1 || index == 2) {
-          return {
-            left: (width + FRAME_GAP) / 2,
-            top: (index - 1) * ((height - FRAME_GAP * 3) / 2 + FRAME_GAP*2),
-            width: width / 2 - FRAME_GAP * 1.5 + FRAME_GAP,
-            height: (height - FRAME_GAP ) / 2
-          };
-        } else {
-          return {
-            left: 0,
-            top: 0,
-            width: width / 2 - FRAME_GAP * 1.5 + FRAME_GAP,
-            height: height
-          };
+    getSubFramePosition: function (layout, index, width, height) {
+        switch (layout) {
+            case $frameEnum.layout.vp2:
+                return {
+                    left: 0,
+                    top: (FRAME_GAP + height) * index / 2,
+                    width: width,
+                    height: height / 2 - FRAME_GAP / 2
+                };
+            case $frameEnum.layout.vp3:
+                return {
+                    left: 0,
+                    top: (height / 3 + FRAME_GAP / 3) * index,
+                    width: width,
+                    height: (height - FRAME_GAP * 3 - FRAME_GAP) / 3 + FRAME_GAP / 1.5
+                };
+            case $frameEnum.layout.hp1:
+                return {
+                    left: FRAME_GAP,
+                    top: FRAME_GAP + index * ((height - FRAME_GAP * 3)),
+                    width: width - FRAME_GAP * 2,
+                    height: (height - FRAME_GAP * 2)
+                };
+            case $frameEnum.layout.hp2:
+                return {
+                    left: (FRAME_GAP + width) * index / 2,
+                    top: 0,
+                    width: (width - FRAME_GAP) / 2,
+                    height: height
+                };
+            case $frameEnum.layout.hp3:
+                if (index == 1 || index == 2) {
+                    return {
+                        left: (width + FRAME_GAP) / 2,
+                        top: (index - 1) * ((height - FRAME_GAP * 3) / 2 + FRAME_GAP * 2),
+                        width: width / 2 - FRAME_GAP * 1.5 + FRAME_GAP,
+                        height: (height - FRAME_GAP ) / 2
+                    };
+                } else {
+                    return {
+                        left: 0,
+                        top: 0,
+                        width: width / 2 - FRAME_GAP * 1.5 + FRAME_GAP,
+                        height: height
+                    };
+                }
+                break;
+            case $frameEnum.layout.hp4:
+                if (index === 0 || index == 1) {
+                    return {
+                        left: 0,
+                        top: index * (height / 2 + FRAME_GAP / 2),
+                        width: width / 2 - FRAME_GAP * 2 + FRAME_GAP * 1.5,
+                        height: (height - FRAME_GAP) / 2
+                    };
+                } else {
+                    return {
+                        left: width / 2 + FRAME_GAP / 2,
+                        top: (index - 2) * (height + FRAME_GAP) / 2,
+                        width: width / 2 - FRAME_GAP * 2 + FRAME_GAP * 1.5,
+                        height: (height - FRAME_GAP) / 2
+                    };
+                }
+                break;
+            default:
+                return null;
         }
-        break;
-      case $frameEnum.layout.hp4:
-        if (index === 0 || index == 1) {
-          return {
-            left: 0,
-            top: index * (height / 2 + FRAME_GAP/2),
-            width: width / 2 - FRAME_GAP * 2 + FRAME_GAP * 1.5,
-            height: (height - FRAME_GAP) / 2
-          };
-        } else {
-          return {
-            left: width / 2 + FRAME_GAP / 2,
-            top:  (index - 2) * (height + FRAME_GAP) / 2,
-            width: width / 2 - FRAME_GAP * 2 + FRAME_GAP * 1.5,
-            height: (height - FRAME_GAP) / 2
-          };
+    },
+    getFramePosition: function (layout, index, height, width) {
+        switch (layout) {
+            case $frameEnum.layout.vp1:
+                return {
+                    left: FRAME_GAP,
+                    top: FRAME_GAP + index * ((height - FRAME_GAP * 3)),
+                    width: width - FRAME_GAP * 2,
+                    height: (height - FRAME_GAP * 2)
+                };
+            case $frameEnum.layout.vp2:
+                return {
+                    left: FRAME_GAP,
+                    top: FRAME_GAP + index * ((height - FRAME_GAP * 3) / 2 + FRAME_GAP),
+                    width: width - FRAME_GAP * 2,
+                    height: (height - FRAME_GAP * 3) / 2
+                };
+            case $frameEnum.layout.vp3:
+                return {
+                    left: FRAME_GAP,
+                    top: FRAME_GAP + index * ((height - FRAME_GAP * 3) / 3 + FRAME_GAP / 2),
+                    width: width - FRAME_GAP * 2,
+                    height: (height - FRAME_GAP * 3 - FRAME_GAP) / 3
+                };
+            case $frameEnum.layout.hp1:
+                return {
+                    left: FRAME_GAP,
+                    top: FRAME_GAP + index * ((height - FRAME_GAP * 3)),
+                    width: width - FRAME_GAP * 2,
+                    height: (height - FRAME_GAP * 2)
+                };
+            case $frameEnum.layout.hp2:
+                return {
+                    left: FRAME_GAP + index * (width - FRAME_GAP) / 2,
+                    top: FRAME_GAP,
+                    width: width / 2 - FRAME_GAP * 1.5,
+                    height: (height - FRAME_GAP * 2)
+                };
+            case $frameEnum.layout.hp3:
+                if (index == 1 || index == 2) {
+                    return {
+                        left: (width + FRAME_GAP) / 2,
+                        top: FRAME_GAP + (index - 1) * ((height - FRAME_GAP * 3) / 2 + FRAME_GAP),
+                        width: width / 2 - FRAME_GAP * 1.5,
+                        height: (height - FRAME_GAP * 3) / 2
+                    };
+                } else {
+                    return {
+                        left: FRAME_GAP + index * (width - FRAME_GAP) / 2,
+                        top: FRAME_GAP,
+                        width: width / 2 - FRAME_GAP * 1.5,
+                        height: (height - FRAME_GAP * 2)
+                    };
+                }
+                break;
+            case $frameEnum.layout.hp4:
+                if (index === 0 || index == 1) {
+                    return {
+                        left: FRAME_GAP,
+                        top: FRAME_GAP + index * (height / 2 - FRAME_GAP / 2),
+                        width: width / 2 - FRAME_GAP * 2 + FRAME_GAP / 2,
+                        height: height / 2 - FRAME_GAP * 1.5
+                    };
+                } else {
+                    return {
+                        left: width / 2 + FRAME_GAP / 2,
+                        top: FRAME_GAP + (index - 2) * (height / 2 - FRAME_GAP / 2),
+                        width: width / 2 - FRAME_GAP * 2 + FRAME_GAP / 2,
+                        height: height / 2 - FRAME_GAP * 1.5
+                    };
+                }
+                break;
+            default:
+                return null;
         }
-        break;
-      default:
-        return null;
+    },
+    addSliderToFrame: function (frameData, frameView) {
+        var items = frameData.items;
+        if (items && items.length > 0) {
+            var slider = new FrameSlider(frameData.id);
+            slider.setPosition(0, 0, frameView.width, frameView.height);
+            var itemViews = [];
+            for (var k = 0; k < items.length; k++) {
+                var item;
+                if (items[k].type == $frameEnum.item.image) {
+                    item = new ImageView(k);
+                } else if (items[k].type == $frameEnum.item.video) {
+                    item = new VideoView(k);
+                }
+                item.setItemSource(items[k].url);
+                itemViews.push(item);
+            }
+            slider.setItems(itemViews);
+            var effects = [];
+            for (var i = 0; i < frameData.effects.length; i++) {
+                effects.push(frameData.effects[i].name);
+            }
+            slider.setEffects(effects);
+
+            slider.setTimeout(6 + Math.random() * 6);
+            frameView.addChildView(slider);
+            // $(frameView.node).addClass('frame_slider_container');
+        }
     }
-  },
-  getFramePosition: function (layout, index, height, width) {
-    switch (layout) {
-      case $frameEnum.layout.vp1:
-        return {
-          left: FRAME_GAP,
-          top: FRAME_GAP + index * ((height - FRAME_GAP * 3)),
-          width: width - FRAME_GAP * 2,
-          height: (height - FRAME_GAP * 2)
-        };
-      case $frameEnum.layout.vp2:
-        return {
-          left: FRAME_GAP,
-          top: FRAME_GAP + index * ((height - FRAME_GAP * 3) / 2 + FRAME_GAP),
-          width: width - FRAME_GAP * 2,
-          height: (height - FRAME_GAP * 3) / 2
-        };
-      case $frameEnum.layout.vp3:
-        return {
-          left: FRAME_GAP,
-          top: FRAME_GAP + index * ((height - FRAME_GAP * 3) / 3 + FRAME_GAP / 2),
-          width: width - FRAME_GAP * 2,
-          height: (height - FRAME_GAP * 3 - FRAME_GAP) / 3
-        };
-      case $frameEnum.layout.hp1:
-        return {
-          left: FRAME_GAP,
-          top: FRAME_GAP + index * ((height - FRAME_GAP * 3)),
-          width: width - FRAME_GAP * 2,
-          height: (height - FRAME_GAP * 2)
-        };
-      case $frameEnum.layout.hp2:
-        return {
-          left: FRAME_GAP + index * (width - FRAME_GAP) / 2,
-          top: FRAME_GAP,
-          width: width / 2 - FRAME_GAP * 1.5,
-          height: (height - FRAME_GAP * 2)
-        };
-      case $frameEnum.layout.hp3:
-        if (index == 1 || index == 2) {
-          return {
-            left: (width + FRAME_GAP) / 2,
-            top: FRAME_GAP + (index - 1) * ((height - FRAME_GAP * 3) / 2 + FRAME_GAP),
-            width: width / 2 - FRAME_GAP * 1.5,
-            height: (height - FRAME_GAP * 3) / 2
-          };
-        } else {
-          return {
-            left: FRAME_GAP + index * (width - FRAME_GAP) / 2,
-            top: FRAME_GAP,
-            width: width / 2 - FRAME_GAP * 1.5,
-            height: (height - FRAME_GAP * 2)
-          };
-        }
-        break;
-      case $frameEnum.layout.hp4:
-        if (index === 0 || index == 1) {
-          return {
-            left: FRAME_GAP,
-            top: FRAME_GAP + index * (height / 2 - FRAME_GAP / 2),
-            width: width / 2 - FRAME_GAP * 2 + FRAME_GAP / 2,
-            height: height / 2 - FRAME_GAP * 1.5
-          };
-        } else {
-          return {
-            left: width / 2 + FRAME_GAP / 2,
-            top: FRAME_GAP + (index - 2) * (height / 2 - FRAME_GAP / 2),
-            width: width / 2 - FRAME_GAP * 2 + FRAME_GAP / 2,
-            height: height / 2 - FRAME_GAP * 1.5
-          };
-        }
-        break;
-      default:
-        return null;
-    }
-  },
-  addSliderToFrame: function(frameData, frameView) {
-    var items = frameData.items;
-    if (items && items.length > 0) {
-      var slider = new FrameSlider(frameData.frameId);
-      slider.setPosition(0, 0, frameView.width, frameView.height);
-      var itemViews = [];
-      for (var k = 0; k < items.length; k++) {
-        if (items[k].type == $frameEnum.item.image) {
-          itemViews.push(new ImageView(k, items[k].url));
-        }
-      }
-      slider.setImages(itemViews);
-      slider.setEffects(frameData.effects);
-      slider.setTimeout(6 + Math.random() * 6);
-      frameView.addChildView(slider);
-      $(frameView.node).addClass('frame_slider_container');
-    }
-  }
 };
 
 // Source: src/uijs/app/modules/frame_manager/FrameManager.js
@@ -655,441 +929,67 @@ var $frameUtils = {
  */
 
 var FrameManager = Base.extend({
-  templateId: 0,
-  masterLayout: '',
-  frames: [],
-  constructor: function () {
-    $backendService.subscribe().done(function (data) {
-      console.log(data);
-      console.log('Got data, now what?');
-    });
-    $backendService.connectBackend().done(function () {
-      console.log('Connect to backend success');
-    }).fail(function () {
-      console.log('Connect to backend failed');
-    });
+    templateId: 0,
+    masterLayout: '',
+    frames: [],
+    constructor: function () {
+        $backendService.subscribe().done(function (data) {
+//            console.log(data);
+//            console.log('Got data, now what?');
+        });
+        $backendService.defDisconnect.done(function () {
+            console.log('Socket connection failed');
+        });
+        this.loadData();
+    },
+    loadData: function () {
+        var self = this;
+        $backendService.getTemplate(1).done(function (data) {
+            for (var i = 0; i < data.frames.length && i < +data.layout.name.split('p')[1]; i++) {
+                var frameData = data.frames[i];
+                var frameView = new FrameView(frameData.id);
+                var _pos1 = $frameUtils.getFramePosition(data.layout.name, i, APP_HEIGHT, APP_WIDTH);
+                frameView.setPosition(_pos1.left, _pos1.top, _pos1.width, _pos1.height);
 
-    this.loadData();
-    this.show();
-  },
-  loadData: function () {
-    var data = $backendService.getFrameData();
+                if (frameData.layout !== null) {
+                    for (var j = 0; j < frameData.frames.length && j < +frameData.layout.name.split('p')[1]; j++) {
+                        var subFrameView = new FrameView(frameData.frames[j].id);
+                        var _pos2 = $frameUtils.getSubFramePosition(
+                            frameData.layout.name, j, _pos1.width, _pos1.height);
+                        subFrameView.setPosition(_pos2.left, _pos2.top, _pos2.width, _pos2.height);
+                        subFrameView.setBackgroundColor('#ccc');
 
-    for (var i = 0; i < data.frames.length; i++) {
-      var frameData = data.frames[i];
-      var frameView = new FrameView(frameData.frameId);
-      var _pos1 = $frameUtils.getFramePosition(data.masterLayout, i, APP_HEIGHT, APP_WIDTH);
-      frameView.setPosition(_pos1.left, _pos1.top, _pos1.width, _pos1.height);
+                        $frameUtils.addSliderToFrame(frameData.frames[j], subFrameView);
 
-      if (frameData.subLayout !== null) {
-        for(var j = 0; j < frameData.frames.length; j++){
-          var subFrameView = new FrameView(frameData.frames[j].frameId);
-          var _pos2 = $frameUtils.getSubFramePosition(
-            frameData.subLayout, j, _pos1.width, _pos1.height);
-          subFrameView.setPosition(_pos2.left, _pos2.top, _pos2.width, _pos2.height);
-          subFrameView.setBackgroundColor('#ccc');
+                        frameView.addChildView(subFrameView);
+                    }
+                } else {
+                    frameView.setBackgroundColor('#ccc');
 
-          $frameUtils.addSliderToFrame(frameData.frames[j], subFrameView);
+                    $frameUtils.addSliderToFrame(frameData, frameView);
 
-          frameView.addChildView(subFrameView);
+                }// end if
+
+
+                self.frames.push(frameView);
+            }// end for
+
+            self.show();
+        });
+    },
+    show: function () {
+        for (var i = 0; i < this.frames.length; i++) {
+            $bodyFrame.addChildView(this.frames[i]);
         }
-      } else {
-        frameView.setBackgroundColor('#ccc');
-
-        $frameUtils.addSliderToFrame(frameData, frameView);
-
-      }// end if
-
-
-      this.frames.push(frameView);
-    }// end for
-  },
-  show: function () {
-    for (var i = 0; i < this.frames.length; i++) {
-      $bodyFrame.addChildView(this.frames[i]);
     }
-  }
-});
-
-// Source: src/uijs/app/modules/frame_manager/BackendService.js
-/**
- * Created by TrungDQ3 on 6/9/14.
- */
-
-var BackendService = Topic.extend({
-  BACKEND_SOCKET_URL: 'ws://10.88.66.251:8080/tsb-shareboard-api/websocket',
-  socket: null,
-  _isListening: false,
-  getFrameData: function () {
-    return {
-      templateId: 1,
-      masterLayout: 'hp4',
-      frames: [
-        {
-          frameId: 1,
-          subLayout: null,
-          frames: [],
-          items: [
-            {
-              itemId: 1,
-              type: 'image',
-              url: 'http://www.byui.edu/images/agriculture-life-sciences/flower.jpg'
-            },
-            {
-              itemId: 2,
-              type: 'image',
-              url: 'http://4.bp.blogspot.com/_89oxiIwvtak/STczHGkOYTI/AAAAAAAAFNg/lEcEBLdlToo/s400/' +
-                'Tropical+Plumeria+Flower.jpg'
-            },
-            {
-              itemId: 3,
-              type: 'image',
-              url: 'http://1.bp.blogspot.com/-GVDcl1JUO8I/UYdQH9LFk5I/AAAAAAAAKUA/IWJ1vDPZdto/s640/' +
-                'flowers333.jpg'
-            }
-          ],
-          effects: ['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown', 'zoomUpDown', 'flipRight', 'flipLeft', 'flipUp', 'flipDown'],
-          childTemplateId: 3
-        },
-        {
-          frameId: 2,
-          subLayout: 'hp3',
-          frames: [
-            {
-              frameId: 3,
-              items: [
-                {
-                  itemId: 4,
-                  type: 'image',
-                  url: 'http://www.boatshedmarket.com.au/image/data/flowers_img.jpg'
-                },
-                {
-                  itemId: 5,
-                  type: 'image',
-                  url: 'http://www.grandpalaceriga.com/images/catalog_full/89ac280cc25173a167f93d4f0e7c' +
-                    '1e21.jpg'
-                },
-                {
-                  itemId: 6,
-                  type: 'image',
-                  url: 'http://4.bp.blogspot.com/_6D_evDvZgNA/SKpsT-ic4DI/AAAAAAAAAD8/fv4lqqI0PRY/s400/' +
-                    'fragile-white-flowers.jpg'
-                }
-              ],
-              effects: ['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown', 'zoomUpDown', 'flipRight', 'flipLeft', 'flipUp', 'flipDown'],
-              childTemplateId: 3
-            },
-            {
-              frameId: 4,
-              items: [
-                {
-                  itemId: 7,
-                  type: 'image',
-                  url: 'http://www.graphix1.co.uk/wp-content/uploads/2011/08/08Flowers.jpg'
-                },
-                {
-                  itemId: 8,
-                  type: 'image',
-                  url: 'http://1.bp.blogspot.com/-WS3KVqdQn_Q/T-bU51hQJ3I/AAAAAAAAAFo/zwC4CKr7Xh0/s1600/' +
-                    'the-desktop-hd-Flowers-wallpapers+(3).jpg'
-                },
-                {
-                  itemId: 9,
-                  type: 'image',
-                  url: 'http://blog.interflora.co.uk/wp-content/uploads/2012/07/Passion-Flower.jpg'
-                }
-              ],
-              effects: ['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown', 'zoomUpDown', 'flipRight', 'flipLeft', 'flipUp', 'flipDown'],
-              childTemplateId: 3
-            },
-            {
-              frameId: 5,
-              items: [
-                {
-                  itemId: 10,
-                  type: 'image',
-                  url: 'http://1.bp.blogspot.com/-JBzh6ow4OW0/UTM-iRlaiyI/AAAAAAAASec/stu52MBuWnM/s1600/' +
-                    'y016-741067.jpg'
-                },
-                {
-                  itemId: 11,
-                  type: 'image',
-                  url: 'http://1.bp.blogspot.com/-DvLpL0NphyU/TpSFQ6WiUOI/AAAAAAAABbg/B-ykNMvWQvU/s1600/' +
-                    'happy.jpg'
-                },
-                {
-                  itemId: 12,
-                  type: 'image',
-                  url: 'http://images2.layoutsparks.com/1/179204/no-idea-t5-flowers.jpg'
-                }
-              ],
-              effects: ['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown', 'zoomUpDown', 'flipRight', 'flipLeft', 'flipUp', 'flipDown'],
-              childTemplateId: 3
-            }
-          ],
-          items: [],
-          effects: ['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown', 'zoomUpDown', 'flipRight', 'flipLeft', 'flipUp', 'flipDown'],
-          childTemplateId: 3
-        },
-        {
-          frameId: 6,
-          subLayout: 'hp4',
-          frames: [
-            {
-              frameId: 7,
-              items: [
-                {
-                  itemId: 13,
-                  type: 'image',
-                  url: 'http://3.bp.blogspot.com/-ONEZIRjcjXE/Uh-WjyE3aSI/AAAAAAAAAos/dLqEAVDfggE/s640/' +
-                    'blue-flower-wallpaper-.jpg'
-                },
-                {
-                  itemId: 14,
-                  type: 'image',
-                  url: 'http://www.bhg.com/videos/hosting/media/bhg/1620905/59977667/add-fragrant-flowers-' +
-                    'to-your-garden.jpg'
-                },
-                {
-                  itemId: 15,
-                  type: 'image',
-                  url: 'http://4.bp.blogspot.com/-QrlW8v6xQos/UYnb7bMSNJI/AAAAAAAAKlI/XcqrCoJsZ68/s1600/vibra' +
-                    'nt-flowers-248131_1024_768rrr.jpg'
-                }
-              ],
-              effects: ['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown', 'zoomUpDown', 'flipRight', 'flipLeft', 'flipUp', 'flipDown'],
-              childTemplateId: 3
-            },
-            {
-              frameId: 8,
-              items: [
-                {
-                  itemId: 16,
-                  type: 'image',
-                  url: 'http://1.bp.blogspot.com/--VqUcuRqS8Q/TYwVmOKir8I/AAAAAAAAAJQ/ZSK5ygALMeU/s1600/red-flowers.jpg'
-                },
-                {
-                  itemId: 17,
-                  type: 'image',
-                  url: 'http://4.bp.blogspot.com/-NAVTPHuKF6s/UayIsar0MqI/AAAAAAAAAQg/XhVidOZshqI/s1600/purple-flower-87a.jpg'
-                },
-                {
-                  itemId: 18,
-                  type: 'image',
-                  url: 'http://2.bp.blogspot.com/-e9Obk_RFH4I/UYdQPpxggOI/AAAAAAAAKUY/KBVhQxwnB4c/s640/flowers44.jpg'
-                }
-              ],
-              effects: ['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown', 'zoomUpDown', 'flipRight', 'flipLeft', 'flipUp', 'flipDown'],
-              childTemplateId: 3
-            },
-            {
-              frameId: 9,
-              items: [
-                {
-                  itemId: 19,
-                  type: 'image',
-                  url: 'http://4.bp.blogspot.com/-ik3E8PBBf70/TwaZ9PMNbrI/AAAAAAAAAG0/kNrGnEbZ-WY/s640/flowers2.jpg'
-                },
-                {
-                  itemId: 20,
-                  type: 'image',
-                  url: 'http://cdn.blogs.sheknows.com/gardening.sheknows.com/2011/02/lotus-flower.jpg'
-                },
-                {
-                  itemId: 21,
-                  type: 'image',
-                  url: 'http://mw2.google.com/mw-panoramio/photos/medium/96447714.jpg'
-                }
-              ],
-              effects: ['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown', 'zoomUpDown', 'flipRight', 'flipLeft', 'flipUp', 'flipDown'],
-              childTemplateId: 3
-            },
-            {
-              frameId: 10,
-              items: [
-                {
-                  itemId: 22,
-                  type: 'image',
-                  url: 'http://3.bp.blogspot.com/-ui6lvZa8CGA/TlnS2Hv2DkI/AAAAAAAACyM/E34Dab7dWfs/s685/Lily+flower+wallpaper4.jpg'
-                },
-                {
-                  itemId: 23,
-                  type: 'image',
-                  url: 'http://flowerinfo.org/wp-content/gallery/lupine-flowers/lupine-flowers-5.jpg'
-                },
-                {
-                  itemId: 24,
-                  type: 'image',
-                  url: 'http://vnfriend.files.wordpress.com/2010/11/flower-4.jpg'
-                }
-              ],
-              effects: ['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown', 'zoomUpDown', 'flipRight', 'flipLeft', 'flipUp', 'flipDown'],
-              childTemplateId: 3
-            }
-          ],
-          items: [],
-          effects: ['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown', 'zoomUpDown', 'flipRight', 'flipLeft', 'flipUp', 'flipDown'],
-          childTemplateId: 3
-        },
-        {
-          frameId: 11,
-          subLayout: 'hp4',
-          frames: [
-            {
-              frameId: 12,
-              items: [
-                {
-                  itemId: 25,
-                  type: 'image',
-                  url: 'http://3.bp.blogspot.com/-kEDW4tNSmpA/UYnb_TbNiqI/AAAAAAAAKlc/MuZ3D0k6xRs/s400/wallpa' +
-                    'pers-of-Rose-Flower456.jpg'
-                },
-                {
-                  itemId: 26,
-                  type: 'image',
-                  url: 'http://cimages.proflowers.com/is/image/ProvideCommerce/PF_13_T220_MDAY_VA0607_W1_SQ'
-                },
-                {
-                  itemId: 27,
-                  type: 'image',
-                  url: 'http://cdn.twentytwowords.com/wp-content/uploads/Hot-Lips-Flower-01-634x396.jpg'
-                }
-              ],
-              effects: ['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown', 'zoomUpDown', 'flipRight', 'flipLeft', 'flipUp', 'flipDown'],
-              childTemplateId: 3
-            },
-            {
-              frameId: 13,
-              items: [
-                {
-                  itemId: 28,
-                  type: 'image',
-                  url: 'http://www.whats-your-sign.com/images/ChineseFlowerMeanings.jpg'
-                },
-                {
-                  itemId: 29,
-                  type: 'image',
-                  url: 'http://4.bp.blogspot.com/-7YF-17Q2s8c/Uh-WX2tVrHI/AAAAAAAAAoc/lwRlay4pL8s/s640/light' +
-                    '-blue-flowers-wallpapers-hd.jpg'
-                },
-                {
-                  itemId: 30,
-                  type: 'image',
-                  url: 'http://1.bp.blogspot.com/-l-ePa0ejM18/UAjHJz63NZI/AAAAAAAAEdU/XErwfKE6JPk/s1600/bird' +
-                    '-of-paradise-flower-1.jpg'
-                }
-              ],
-              effects: ['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown', 'zoomUpDown', 'flipRight', 'flipLeft', 'flipUp', 'flipDown'],
-              childTemplateId: 3
-            },
-            {
-              frameId: 14,
-              items: [
-                {
-                  itemId: 31,
-                  type: 'image',
-                  url: 'http://2.bp.blogspot.com/_mvHl0jIiX-E/S2j1d3skY_I/AAAAAAAAE9Q/ni4g5VuGmk8/s640/blue' +
-                    '-violet-flower07.jpg'
-                },
-                {
-                  itemId: 32,
-                  type: 'image',
-                  url: 'http://www.designboom.com/weblog/images/images_2/lara/818_images/robert_buelteman/' +
-                    'electrocuted_flowers05.jpg'
-                },
-                {
-                  itemId: 33,
-                  type: 'image',
-                  url: 'http://coverslike.com/thumbs/red_flower-t1.jpg'
-                }
-              ],
-              effects: ['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown', 'zoomUpDown', 'flipRight', 'flipLeft', 'flipUp', 'flipDown'],
-              childTemplateId: 3
-            },
-            {
-              frameId: 15,
-              items: [
-                {
-                  itemId: 34,
-                  type: 'image',
-                  url: 'http://2.bp.blogspot.com/-EM-G_YNgKJ8/TV38pYHcG2I/AAAAAAAAJCU/GCjizjfOWMg/s400/pin' +
-                    'k+rose+wallpapers+%252810%2529.jpg'
-                },
-                {
-                  itemId: 35,
-                  type: 'image',
-                  url: 'http://2.bp.blogspot.com/-2k0vUtH2xZ8/US8aB1Fz1DI/AAAAAAAAHGI/XoxwF_s6Dhs/s400/flowe' +
-                    'r_in_blue_sky-normal5.4.jpg'
-                },
-                {
-                  itemId: 36,
-                  type: 'image',
-                  url: 'http://4.bp.blogspot.com/-NAVTPHuKF6s/UayIsar0MqI/AAAAAAAAAQg/XhVidOZshqI/s1600/purpl' +
-                    'e-flower-87a.jpg'
-                }
-              ],
-              effects: ['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown', 'zoomUpDown', 'flipRight', 'flipLeft', 'flipUp', 'flipDown'],
-              childTemplateId: 3
-            }
-          ],
-          items: [],
-          effects: ['swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown', 'zoomUpDown', 'flipRight', 'flipLeft', 'flipUp', 'flipDown'],
-          childTemplateId: 3
-        }
-      ]
-    };
-  },
-  connectBackend: function () {
-    var self = this;
-    this.socket = new SocketClient();
-    return this.socket.connect(this.BACKEND_SOCKET_URL).done(function () {
-      self._isListening = true;
-      self.startSubscribe();
-    });
-  },
-  disconnectBackend: function () {
-    this._isListening = false;
-    this.socket.close();
-  },
-  startSubscribe: function () {
-    var self = this;
-    this.socket.subscribe().done(function (msgEvent) {
-      self.processData(JSON.parse(msgEvent.data));
-      if (self._isListening) {
-        self.startSubscribe();
-      }
-    });
-  },
-  processData: function (data) {
-    var self = this;
-    switch (data.method) {
-      case $frameEnum.method.require_device_authenticate:
-        this.authenticateDevice();
-        break;
-      default:
-        self.publish(data);
-    }
-  },
-  authenticateDevice: function () {
-    this.sendMessage($frameEnum.method.device_authenticate, {
-      deviceId: DEVICE_ID
-    });
-  },
-  sendMessage: function (method, data) {
-    this.socket.send(JSON.stringify({
-      method: method,
-      data: data
-    }));
-  }
 });
 
 // Source: src/uijs/app/modules/frame_manager/init.js
 /**
  * Created by TrungDQ3 on 6/9/14.
  */
-$coreStartup.done(function() {
-  window.$backendService = new BackendService();
-  window.$frameManager = new FrameManager();
+$coreStartup.done(function () {
+    window.$frameManager = new FrameManager();
 });
 
 // Source: src/uijs/app/modules/socket_client/SocketClient.js
@@ -1098,41 +998,47 @@ $coreStartup.done(function() {
  */
 
 var SocketClient = Topic.extend({
-  _ws: null,
-  url: '',
-  constructor: function (url) {
-    if (url) {
-      this.connect(url);
-    }
-    this.base();
-  },
-  connect: function (url) {
-    var d = new Deferred();
-    var self = this;
-    this.url = url;
-    this._ws = new WebSocket(url);
+    _ws: null,
+    url: '',
+    defClose: new Deferred(),
+    constructor: function (url) {
+        if (url) {
+            this.connect(url);
+        }
+        this.base();
+    },
+    connect: function (url) {
+        var d = new Deferred();
+        var self = this;
 
-    this._ws.onopen = function() {
-      d.resolve();
-    };
-    this._ws.onmessage = function (evt) {
-      self.publish(evt);
-    };
-    this._ws.onclose = function() {
-      d.reject();
-    };
-    return d;
-  },
-  send: function (msg) {
-    this._ws.send(msg);
-  },
-  close: function () {
-    this._ws.close();
-  }
-}, {
-  isSupported: function () {
-    return "WebSocket" in window;
-  }
+        if (!this.isSupported()) {
+            d.reject('Your browser does not support WebSocket');
+            return d;
+        }
+
+        this.url = url;
+        this._ws = new WebSocket(url);
+
+        this._ws.onopen = function () {
+            d.resolve();
+        };
+        this._ws.onmessage = function (evt) {
+            self.publish(evt);
+        };
+        this._ws.onclose = function () {
+            self.defClose.resolve();
+        };
+        return d;
+    },
+    send: function (msg) {
+        this._ws.send(msg);
+    },
+    close: function () {
+        this._ws.close();
+    },
+    isSupported: function () {
+        return "WebSocket" in window;
+    }
 });
 
 // Source: dist/js/include/appComponents.js

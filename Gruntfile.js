@@ -146,7 +146,8 @@ module.exports = function(grunt) {
       },
       utils: {
         src: [
-          'src/uijs/core/utils/Topic.js'
+          'src/uijs/core/utils/Topic.js',
+          'src/uijs/core/utils/DeferredPool.js'
         ],
         dest: 'dist/js/include/utils.js',
         nonull: true

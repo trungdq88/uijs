@@ -2,5 +2,7 @@
     "ui-baseview",
     "ui-frameview",
     "ui-frameslider",
-    "ui-imageview"
+    "ui-itemview",
+    "ui-imageview",
+    "ui-videoview"
 ]

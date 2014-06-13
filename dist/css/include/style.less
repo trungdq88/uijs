@@ -3,15 +3,25 @@
 
 // Source: src/uijs/core/global/css/global.less
 html, body {
-  padding: 0;
-  margin: 0
+    padding: 0;
+    margin: 0
 }
 
 // Source: dist/css/include/components.css
 // Source: src/uijs/core/components/ui-frameslider/frame_slider.less
-.frame_slider_container {
-    background: url('@{imgPath}loading.png') 50% 50% no-repeat;
-    .frame_slider {
-        overflow: hidden;
+.frame_slider {
+    // background: url('@{imgPath}loading.png') 50% 50% no-repeat;
+    overflow: hidden;
+    .frame_slider_content {
+        position: absolute;
+    }
+    .frame_slider_loading {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 2px;
+        background-color: #4c8fff;
+        -webkit-transition: -webkit-transform 0.5s;
+        -webkit-transform-origin: 0 0;
     }
 }

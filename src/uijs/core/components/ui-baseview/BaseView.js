@@ -37,11 +37,15 @@ var BaseView = Base.extend({
     setBackgroundColor: function (color) {
         this.node.style.backgroundColor = color;
     },
-    addChildView: function (view) {
+    addChildView: function (view, altNode) {
         if (view && view.id && !this.childViews[view.id]) {
             view.parentView = this;
             this.childViews[view.id] = view;
-            this.node.appendChild(view.node);
+            if (altNode) {
+                altNode.appendChild(view.node);
+            } else {
+                this.node.appendChild(view.node);
+            }
         } else {
             console.log('View ID (' + view.id + ') is not defined or already exist in parent View (' + this.id + ')');
         }

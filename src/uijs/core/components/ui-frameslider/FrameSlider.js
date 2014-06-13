@@ -6,77 +6,105 @@ var FrameSlider = BaseView.extend({
     currentIndex: 0,
     timeOut: 3,
     duration: 1,
-    images: [],
+    items: [],
     effects: [],
-    constructor: function (id, images, effects) {
+    contentNode: null,
+    loadingNode: null,
+    constructor: function (id, items, effects) {
         this.base('FrameSlider_' + id);
         this.childViews = {};
         this.setNode(templates.frameslider.slider(this));
-        if (images) {
-            this.setImages(images);
+        this.contentNode = $(this.node).find('#' + this.id + '_content')[0];
+        this.loadingNode = $(this.node).find('#' + this.id + '_loading')[0];
+        this.loadingNode.style.webkitTransform = 'scaleX(0)';
+        if (items) {
+            this.setItems(items);
         }
         if (effects) {
             this.setEffects(effects);
         }
     },
-    setImages: function (images) {
+    setPosition: function (left, top, width, height) {
+        this.base(left, top, width, height);
+        this.loadingNode.style.width = (this.width*0.8) + 'px';
+        this.loadingNode.style.left = (this.width*0.1) + 'px';
+        this.loadingNode.style.top = (this.height / 2 - 1) + 'px';
+    },
+    setItems: function (items) {
         var self = this,
-            defs = [];
-        this.images = images;
+            loaded = 0;
+        this.items = items;
         this.hide();
-        for (var i = 0; i < images.length; i++) {
-            var image = images[i];
-            image.setPosition(0, 0, this.width, this.height);
-            image.node.style.webkitTransform = 'translate3d(0px, 0px, 0px)';
-            image.node.style.webkitTransition = '-webkit-transform ' + this.duration + 's';
-            defs.push(image.imageReady);
-        }
-        Deferred.when(Deferred, defs).done(function () {
-            for (var i = 1; i < arguments.length; i++) {
-                self.addChildView(arguments[i][0]);
+
+        var updateProcess = function () {
+            loaded++;
+            if (loaded === items.length) {
+                setTimeout(function () {
+                    for (var i = 0; i < items.length; i++) {
+                        self.addChildView(items[i], self.contentNode);
+                        if (item instanceof VideoView) {
+                            items[i].play();
+                        }
+                    }
+                    self.show();
+                    if (items.length > 1) {
+                        self.startSlideShow();
+                    }
+                    self.loadingNode.parentNode.removeChild(self.loadingNode);
+                    self.node.style.background = '';
+                }, 1000);
             }
-            self.show();
-            self.startSlideShow();
-        });
+            self.updateProcessbar(loaded / items.length);
+        };
+        for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            item.setPosition(0, 0, this.width, this.height);
+            item.node.style.webkitTransform = 'translate3d(0px, 0px, 0px)';
+            item.itemReady.done(updateProcess);
+        }
+    },
+    updateProcessbar: function (percent) {
+        this.loadingNode.style.webkitTransform = 'scaleX(' + percent + ')';
     },
     setEffects: function (effects) {
         this.effects = effects;
     },
     hide: function () {
-        this.node.style.webkitTransition = 'opacity 0.5s';
-        this.node.style.opacity = 0;
+        this.contentNode.style.opacity = 0;
     },
     show: function () {
-        this.node.style.opacity = 0.99;
+        this.contentNode.style.opacity = 0.99;
     },
     startSlideShow: function () {
         var self = this;
-        this.currentIndex = this.images.length - 1;
-        for (var i = 0; i < this.images.length; i++) {
-            this.images[i].node.style.zIndex = i + 1;
+        this.currentIndex = this.items.length - 1;
+        for (var i = 0; i < this.items.length; i++) {
+            this.items[i].node.style.zIndex = i + 1;
         }
         var moveLayers = function (index) {
-            self.images[index].node.style.zIndex = 1;
-            for (var i = 0; i < self.images.length; i++) {
+            self.items[index].node.style.zIndex = 1;
+            for (var i = 0; i < self.items.length; i++) {
                 if (i != index) {
-                    self.images[i].node.style.zIndex = +self.images[i].node.style.zIndex + 1;
+                    self.items[i].node.style.zIndex = +self.items[i].node.style.zIndex + 1;
                 }
             }
         };
         var doTransition = function () {
             if (self.currentIndex < 0) {
-                self.currentIndex = self.images.length - 1;
+                self.currentIndex = self.items.length - 1;
             }
             var anim = $frameAnimation[self.getRandomEffect()];
 
             if (anim) {
-                anim(self.images[self.currentIndex].node);
+                self.items[self.currentIndex].enableTransition(self.duration);
+                anim(self.items[self.currentIndex].node);
 
                 self.currentIndex--;
 
                 setTimeout(function () {
                     var targetIndex = self.currentIndex + 1;
-                    anim(self.images[targetIndex].node, true);
+                    self.items[targetIndex].disableTransition();
+                    anim(self.items[targetIndex].node, true);
                     moveLayers(targetIndex);
                 }, self.duration * 1000);
             } else {
@@ -95,9 +123,9 @@ var FrameSlider = BaseView.extend({
     },
     setDuration: function (n) {
         this.duration = n;
-        for (var i = 0; i < this.images.length; i++) {
-            var image = this.images[i];
-            image.node.style.webkitTransition = '-webkit-transform ' + this.duration + 's';
+        for (var i = 0; i < this.items.length; i++) {
+            var item = this.items[i];
+            item.node.style.webkitTransition = '-webkit-transform ' + this.duration + 's';
         }
     },
     getRandomEffect: function () {

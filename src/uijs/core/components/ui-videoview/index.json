@@ -1,0 +1,8 @@
+{
+    "js": [
+        "VideoView.js"
+    ],
+    "soy": [
+        "video_view.soy"
+    ]
+}

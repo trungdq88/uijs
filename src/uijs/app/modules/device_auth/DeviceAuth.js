@@ -13,7 +13,7 @@ var DeviceAuth = Base.extend({
             console.log('Authenticated success: ' + data.message);
         }).fail(function (msg) {
             console.log('Authenticated failed: ' + msg);
-        })
+        });
     },
     startSubscribe: function () {
         var self = this;

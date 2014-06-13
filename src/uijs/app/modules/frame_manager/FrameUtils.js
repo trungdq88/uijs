@@ -149,15 +149,20 @@ var $frameUtils = {
     addSliderToFrame: function (frameData, frameView) {
         var items = frameData.items;
         if (items && items.length > 0) {
-            var slider = new FrameSlider(frameData.frameId);
+            var slider = new FrameSlider(frameData.id);
             slider.setPosition(0, 0, frameView.width, frameView.height);
             var itemViews = [];
             for (var k = 0; k < items.length; k++) {
+                var item;
                 if (items[k].type == $frameEnum.item.image) {
-                    itemViews.push(new ImageView(k, items[k].url));
+                    item = new ImageView(k);
+                } else if (items[k].type == $frameEnum.item.video) {
+                    item = new VideoView(k);
                 }
+                item.setItemSource(items[k].url);
+                itemViews.push(item);
             }
-            slider.setImages(itemViews);
+            slider.setItems(itemViews);
             var effects = [];
             for (var i = 0; i < frameData.effects.length; i++) {
                 effects.push(frameData.effects[i].name);
@@ -166,7 +171,7 @@ var $frameUtils = {
 
             slider.setTimeout(6 + Math.random() * 6);
             frameView.addChildView(slider);
-            $(frameView.node).addClass('frame_slider_container');
+            // $(frameView.node).addClass('frame_slider_container');
         }
     }
 };
